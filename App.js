@@ -6,11 +6,16 @@ import {
   View,
   Text,
   StatusBar,
+  Dimensions
 } from 'react-native';
+
+var width = Dimensions.get('window').width; //full width
+var height = Dimensions.get('window').height; //full height
 
 import MoveableButton from './components/MoveableButton.js';
 import HeaderElem from './components/HeaderElem.js'; 
 import Lister from './components/DataFragment.js'; 
+
 
 var options = [
 
@@ -23,35 +28,39 @@ var options = [
         id: 0, 
         type: "selection",
         questionSafename:"Itsensä vahingoittaminen",
-        questions:{
-          0:{
+        questions:[
+          {
+            id: 0,
             safename:"Ajatukset",
             extraName:"",
             list:[1,2,3,4,5]
           },
-          1:{
+          {
+            id: 1,
             safename:"Teot",
             extraName:"",
             list:[1,2,3,4,5]
           }
-        }
+        ]     
       },
       {
         id: 1, 
         type: "selection",
         questionSafename:"Itsemurha aikeet",
-        questions:{
-          0:{
+        questions:[
+          {
+            id: 0,
             safename:"Ajatukset",
             extraName:"",
             list:[1,2,3,4,5]
           },
-          1:{
+          {
+            id: 1,
             safename:"Teot",
             extraName:"",
             list:[1,2,3,4,5]
           }
-        }
+        ] 
       },
       {
         id:2,
@@ -89,7 +98,8 @@ var options = [
     groupSafename:"Tunteet",
     items:[
       {
-        innergroupId:0,
+        hasInner:true,
+        innerGroupId:0,
         groupSafename:"Tietoisuustaidot",
         innerItems:[
           {
@@ -125,7 +135,8 @@ var options = [
         ]
       },
       {
-        innergroupId:1,
+        hasInner:true,
+        innerGroupId:1,
         groupSafename:"Ahdingon sietämisen taidot",
         innerItems:[
           {
@@ -141,6 +152,7 @@ var options = [
 
 ];
 
+//alignSelf: 'stretch' = fullwidth
 const App = () => { 
   return (
     
@@ -148,15 +160,18 @@ const App = () => {
       <ScrollView>
         
         <View style={styles.body}>
-          <View style={{width: 150, height: 50, backgroundColor: 'powderblue'}}>
+          <View style={{alignSelf: 'stretch', height: 50, backgroundColor: 'powderblue'}}>
             <Text style={styles.highlightedText}>Moi2</Text>
           </View>
-          <View style={{width: 150, height: 50, backgroundColor: 'blue'}}>
+          <View style={{alignSelf: 'stretch', height: 50, backgroundColor: 'blue'}}>
             <HeaderElem joku="jotain" /> 
           </View> 
-          <View style={{width: 150, height: 50, backgroundColor: '#666'}}>
+          <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
             <Lister options={options} /> 
-          </View>   
+          </View>
+          <View style={{alignSelf: 'stretch', height: 200, backgroundColor: 'red'}}>
+            <HeaderElem joku="jotain" /> 
+          </View>  
         </View> 
 
       </ScrollView>
