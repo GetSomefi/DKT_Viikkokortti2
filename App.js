@@ -19,6 +19,64 @@ import Lister from './components/DataFragment.js';
 
 var options = [
 
+  //taidot
+  {
+    groupId:3,
+    groupSafename:"Taidot",
+    items:[
+      {
+        hasInner:true,
+        innerGroupId:0,
+        groupSafename:"Tietoisuustaidot",
+        innerItems:[
+          {
+            id: 0, 
+            type: "selectone",
+            questionSafename:"Viisasmieli",
+            extraName:"",
+          },
+          {
+            id: 1, 
+            type: "selectone",
+            questionSafename:"Havainnointi (huomio mitä tapahtui)",
+            extraName:"Mitä -taidot",
+          },
+          {
+            id: 2, 
+            type: "selectone",
+            questionSafename:"Kuvailu (anna havaintoihin sanat)",
+            extraName:"",
+          },
+          {
+            id: 3, 
+            type: "selectone",
+            questionSafename:"Osallistuminen (heittäydy kokemukseesi)",
+            extraName:"",
+          },
+          {
+            id: 4, 
+            type: "selectone",
+            questionSafename:"Tuomitsemattomuus",
+            extraName:"Miten -taidot",
+          },
+        ]
+      },
+      {
+        hasInner:true,
+        innerGroupId:1,
+        groupSafename:"Ahdingon sietämisen taidot",
+        innerItems:[
+          {
+            id: 0, 
+            type: "selectone",
+            questionSafename:"STOP",
+            extraName:"",
+          },
+        ]
+      }
+    ]
+  },
+
   //käyttäytyminen
   {
     groupId:1,
@@ -92,63 +150,7 @@ var options = [
     ]
   },
 
-  //taidot
-  {
-    groupId:3,
-    groupSafename:"Tunteet",
-    items:[
-      {
-        hasInner:true,
-        innerGroupId:0,
-        groupSafename:"Tietoisuustaidot",
-        innerItems:[
-          {
-            id: 0, 
-            type: "selectone",
-            questionSafename:"Viisasmieli",
-            extraName:"",
-          },
-          {
-            id: 1, 
-            type: "selectone",
-            questionSafename:"Havainnointi (huomio mitä tapahtui)",
-            extraName:"Mitä -taidot",
-          },
-          {
-            id: 2, 
-            type: "selectone",
-            questionSafename:"Kuvailu (anna havaintoihin sanat)",
-            extraName:"",
-          },
-          {
-            id: 3, 
-            type: "selectone",
-            questionSafename:"Osallistuminen (heittäydy kokemukseesi)",
-            extraName:"",
-          },
-          {
-            id: 4, 
-            type: "selectone",
-            questionSafename:"Tuomitsemattomuus",
-            extraName:"Miten -taidot",
-          },
-        ]
-      },
-      {
-        hasInner:true,
-        innerGroupId:1,
-        groupSafename:"Ahdingon sietämisen taidot",
-        innerItems:[
-          {
-            id: 0, 
-            type: "selectone",
-            questionSafename:"STOP",
-            extraName:"",
-          },
-        ]
-      }
-    ]
-  }
+
 
 ];
 
