@@ -122,9 +122,9 @@ var options = [
           },
           {
             id:11,
-            type:"selectone",
-            questionSafename:"Vapaa teksti tähän",
-            extraName:"",
+            type:"freetext",
+            questionSafename:"Vapaa teksti",
+            extraName:"Kirjoita tähän",
           }
         ]
       }
@@ -228,12 +228,7 @@ var options = [
             questionSafename:"Asia kerrallaan",
             extraName:"",
           },
-          {
-            id: 6, 
-            type: "selectone",
-            questionSafename:"Tee sitä mikä toimii",
-            extraName:"(tehokkuus)",
-          }
+
         ]
       },
       {

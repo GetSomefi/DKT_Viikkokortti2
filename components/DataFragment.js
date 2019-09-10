@@ -8,7 +8,8 @@ import {
   StyleSheet,
   TouchableHighlight,
   Dimensions,
-  Image
+  Image,
+  TextInput,
 } from 'react-native';
 
 var width = Dimensions.get('window').width; //full width
@@ -29,8 +30,10 @@ class Lister extends Component {
       props:this.props.options,
       activeColor:"#8bc586", //green
       inactiveColor:"white",
-      activeColor2:"#f7f7f7", //light gray
+      activeColor2:"#f7f7f7", //lighter gray
       inactiveColor2:"white",
+      activeColor3:"#f1f1f1", //light gray
+      inactiveColor3:"#FFF",
 
       activeIconOpacity:1,
     };
@@ -66,39 +69,74 @@ class Lister extends Component {
         if(itemInner.hasInner){
           itemInner.innerItems.map( (innerItems, i3) => {
             var key = "questionNameInner" + itemInner.innerGroupId + "_" + innerItems.id;
-            //console.log('key ', key ); 
-            ret.push(
-              <TouchableHighlight
-                onPress={ (evt) => this.onPress(key,evt) } 
-                key={key}>
-                <View style={{...styles.selectableParent,
-                backgroundColor: this.state[key +'-active'] ? this.state.activeColor : this.state.inactiveColor,
-                }}>
-                  <View style={{margin:15}}>
-                    <View style={{...styles.selectableCheckbox,
-                    backgroundColor: this.state[key +'-active'] ? this.state.activeColor2 : this.state.inactiveColor2,
-                    }}>
-                      <Image
-                        style={{
-                          width: 32, 
-                          height: 32,
-                          opacity: this.state[key +'-active'] ? this.state.activeIconOpacity : 0,
-                        }}
-                        source={require('../assets/icons/times_320_320.png')}
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.selectableContent}>
-                    <Text>
-                      { this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
-                      {innerItems.questionSafename}
-                      {innerItems.extraName != "" ? "\n" : null}
-                      {innerItems.extraName}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableHighlight>
-            );
+	           if(innerItems.type == "freetext"){
+				ret.push(
+				<TouchableHighlight 
+					key={key+"_freetext"}
+					onPress={() => this.setState({ isEditing: true })}
+	            >
+		            <View style={{...styles.freeTextParent,
+	                	backgroundColor: this.state.isEditing ? this.state.activeColor3 : this.state.inactiveColor3
+	            	}}>
+					  <Text style={styles.labelHeader}>
+	                	{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
+						{innerItems.questionSafename}
+					  </Text>
+
+					  { this.state.isEditing ?
+					    <TextInput
+					      multiline={true}
+					      value={this.state.txt}
+					      onChangeText={(value) => this.setState({ txt: value })}
+					      autoFocus
+					      onBlur={() => this.setState({ isEditing: false })}
+					    /> :
+					    <Text
+					      style={styles.freeTextEditable}
+					    >
+					      { !this.state.txt ? innerItems.extraName : 
+					      	this.state.txt
+					  	  } 
+					    </Text> 
+					  }
+					</View>
+				</TouchableHighlight>
+				)
+	           }  
+	           else{
+	            ret.push(
+	              <TouchableHighlight
+	                onPress={ (evt) => this.onPress(key,evt) } 
+	                key={key}>
+	                <View style={{...styles.selectableParent,
+	                backgroundColor: this.state[key +'-active'] ? this.state.activeColor : this.state.inactiveColor,
+	                }}>
+	                  <View style={{margin:15}}>
+	                    <View style={{...styles.selectableCheckbox,
+	                    backgroundColor: this.state[key +'-active'] ? this.state.activeColor2 : this.state.inactiveColor2,
+	                    }}>
+	                      <Image
+	                        style={{
+	                          width: 32, 
+	                          height: 32,
+	                          opacity: this.state[key +'-active'] ? this.state.activeIconOpacity : 0,
+	                        }}
+	                        source={require('../assets/icons/times_320_320.png')}
+	                      />
+	                    </View>
+	                  </View>
+	                  <View style={styles.selectableContent}>
+	                    <Text>
+	                      { this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
+	                      {innerItems.questionSafename}
+	                      {innerItems.extraName != "" ? "\n" : null}
+	                      {innerItems.extraName}
+	                    </Text>
+	                  </View>
+	                </View>
+	              </TouchableHighlight>
+	            );
+	          }
           });
         }
         else{
@@ -159,46 +197,9 @@ class Lister extends Component {
               );
 
             });
-          }        
+          }   
         }
       });
-
-
-/*
-          if(item.type = "selectone"){
-            console.log('type', item); 
-            ret.push(
-              <TouchableHighlight
-                onPress={ (evt) => this.onPress(key,evt) } 
-                key={key}>
-                <View style={{...styles.selectableParent,
-                backgroundColor: this.state[key +'-active'] ? this.state.activeColor : this.state.inactiveColor,
-                }}>
-                  <View style={{margin:15}}>
-                    <View style={{...styles.selectableCheckbox,
-                    backgroundColor: this.state[key +'-active'] ? this.state.activeColor2 : this.state.inactiveColor2,
-                    }}>
-                      <Image
-                        style={{
-                          width: 32, 
-                          height: 32,
-                          opacity: this.state[key +'-active'] ? this.state.activeIconOpacity : 0,
-                        }}
-                        source={require('../assets/icons/times_320_320.png')}
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.selectableContent}>
-                    <Text>
-                      { this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
-                      {item.questionSafename}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableHighlight>
-            );
-          }
-*/
 
       var key = "masterView" + item.groupId;
       return(
@@ -241,6 +242,24 @@ const styles = StyleSheet.create({
     padding:padding,
   },
 
+  labelHeader:{
+    fontSize: 16,
+    paddingBottom:padding,
+  },
+
+  freeTextParent: {
+    backgroundColor: '#FFF',
+    borderColor: '#d6d7da',
+    justifyContent:"center",
+    alignItems:"flex-start",
+    margin:padding,
+    padding:padding,
+    borderRadius:borderRadius,
+  },
+  freeTextEditable: {
+    justifyContent:"flex-end",
+    paddingBottom:padding,
+  },
   selectableParent: {
     flex:1,
     flexDirection:'row',
@@ -278,8 +297,8 @@ const styles = StyleSheet.create({
     alignItems:"center",
     justifyContent:"center",
     borderRadius:borderRadius,
-    borderWidth:1,
-    borderColor:'#d6d7da',
+    //borderWidth:1,
+    //borderColor:'#d6d7da',
     marginRight:padding
   },
 });
