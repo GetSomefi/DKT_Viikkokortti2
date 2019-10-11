@@ -75,7 +75,7 @@ var options = [
             type:"selectone",
             questionSafename:"Alkoholi",
             extraName:"",
-            selectedValue:"qqq"
+            selectedValue:""
           },
           {
             id:3,
@@ -138,6 +138,7 @@ var options = [
             type:"freetext",
             questionSafename:"Vapaa teksti",
             extraName:"Kirjoita tähän",
+            selectedValue:""
           }
         ]
       }
@@ -430,12 +431,6 @@ const App = () => {
       <ScrollView>
         
         <View style={styles.body}>
-          <View style={{alignSelf: 'stretch', height: 50, backgroundColor: 'powderblue'}}>
-            <Text style={styles.highlightedText}>Moi2</Text>
-          </View>
-          <View style={{alignSelf: 'stretch', height: 50, backgroundColor: 'blue'}}>
-            <HeaderElem joku="jotain" /> 
-          </View> 
           <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
             <Lister options={options} /> 
           </View>

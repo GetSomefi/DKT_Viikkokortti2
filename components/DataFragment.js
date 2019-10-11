@@ -21,11 +21,9 @@ var height = Dimensions.get('window').height; //full height
 class Lister extends Component {
 	constructor(props) {
 		super(props);
-		//let p = this.props.options;
-		//console.log(p);
+		//console.log(this.props.options);
 		this.state = {
 		  showDebug:false, //shows keys if those are set inside elements
-		  //showDebug:true, //shows keys if those are set inside elements
 
 		  tc: "white",
 		  bg: "blue",
@@ -41,35 +39,48 @@ class Lister extends Component {
 		};
 	}
 
+	componentDidMount(){
+		this.createElStored();
+	}
+
+	//tämä tekee keyn ja lähettää tallennettavaksi
 	choiceSelected = (key,evt,el) => {
-		console.log("-- key to store",key);
+		//console.log("-- key to store",key);
 
 		let selected = true;
 		if( this.state[key +'-active'] ){
 		  selected = false;
 		}
-		console.log('selected',selected); 
+		//console.log('selected',selected); 
 		this.setState({ 
 		  [key +'-active']: selected 
 		});
 
-		console.log('state', this.state);
+		//console.log('state', this.state);
 
-		console.log('el', el);
+		//console.log('el', el);
 		var d = new Date();
 		let date = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
 		this.storeData(el,date);
 		//el.questionSafename = "sad";
 		//return el;
-
+		
+		/*
 		this.setState({
 			[key +'-selectedValue']:"valittu"
 		});
 		console.log(this.state);
+		*/
 	}
 
 	t = () => {
 		console.log('test'); 
+	}
+
+	setSelectionActive = (key) => {
+		this.setState({
+    		[key +'-active']:true
+    	});
 	}
 
 	debugTexts = () => {
@@ -90,14 +101,19 @@ class Lister extends Component {
 		}
 		console.log('Key:', key);
 		console.log('Data:', data);
+		console.log('Alkup', this.props.options); 
 	};
 
-	retrieveData = async (key) => {
+	retrieveData = async () => {
+	  console.log('yrittää');
+	  var d = new Date();
+	  let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
 	  try {
 	    const value = await AsyncStorage.getItem(key);
 	    if (value !== null) {
 	      // We have data!!
-	      console.log(value);
+	      //console.log(value);
+	      console.log( JSON.parse(value) );
 	    }
 	  } catch (error) {
 	    // Error retrieving data
@@ -105,9 +121,32 @@ class Lister extends Component {
 	  }
 	};
 
+	createElStored = async() => {
+		//retrieve data and if it does not exist (i.e. new day) it runs empty new createEl;
+		console.log('fetching saved data');
+		var d = new Date();
+		let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
+		try {
+			const value = await AsyncStorage.getItem(key);
+			if (value !== null) {
+				console.log('dataa on');
+				this.setState({ 
+				  propsOptions: JSON.parse(value)
+				});
+
+			}else{
+				console.log('dataa ei ole');
+			}
+		} catch (error) {
+			// Error retrieving data
+			console.log('Retrieve error',error); 
+		}		
+	};
+
 	createEl = () => {
 		//this.state.propsOptions[i]
 		let copyPropsOptions = [...this.state.propsOptions];
+		//this.createElStored();
 
 		let ret = [];
 		let listItems = copyPropsOptions.map((item, i) => {
@@ -118,12 +157,12 @@ class Lister extends Component {
 		    <View key={key}>
 				{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
 		      	<Text style={styles.header1}>{item.groupSafename}</Text>
-		    </View> 
+		    </View>
 		  ); 
 
 
 		  //this.state.propsOptions[i][i2]
-		  return item.items.map((itemInner, i2) => {
+		  item.items.map((itemInner, i2) => {
 		    //console.log('content ', itemInner);
 		    if(itemInner.hasInner){
 
@@ -132,83 +171,102 @@ class Lister extends Component {
 		        var key = "questionName|" + item.id + "_" + itemInner.id + "_" + innerItems.id;
 		        let keyArray = [item.id, itemInner.id, innerItems.id];
 				if(innerItems.type == "freetext"){ 
-				ret.push(
-				<TouchableHighlight 
-					key={key+"_freetext"}
-					onPress={() => this.setState({ isEditing: true })}
-				>
-				    <View style={{...styles.freeTextParent,
-				    	backgroundColor: this.state.isEditing ? this.state.activeColor3 : this.state.inactiveColor3
-					}}>
-					  <Text style={styles.labelHeader}>
-				    	{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
-						{innerItems.questionSafename}
-					  </Text>
+					
+					ret.push(
+					<TouchableHighlight 
+						key={key+"_freetext"}
+						onPress={() => this.setState({ isEditing: true })}
+					>
+					    <View style={{...styles.freeTextParent,
+					    	backgroundColor: this.state.isEditing ? this.state.activeColor3 : this.state.inactiveColor3
+						}}>
+						  <Text style={styles.labelHeader}>
+					    	{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
+							{innerItems.questionSafename}
+						  </Text>
 
-					  { this.state.isEditing ?
-					    <TextInput
-					      multiline={true}
-					      value={this.state.txt}
-					      onChangeText={(value) => this.setState({ txt: value })}
-					      autoFocus
-					      onBlur={() => this.setState({ isEditing: false })}
-					    /> :
-					    <Text
-					      style={styles.freeTextEditable}
-					    >
-					      { !this.state.txt ? innerItems.extraName : 
-					      	this.state.txt
-					  	  } 
-					    </Text> 
-					  }
-					</View>
-				</TouchableHighlight>
-				)
+						  { this.state.isEditing ?
+						    <TextInput
+						      multiline={true}
+						      value={innerItems.selectedValue}
+						      onChangeText={
+						      	(value) => {
+						      		this.setState({ txt: value })
+						      		innerItems.selectedValue = value;
+						    		this.choiceSelected(key,null,listItems);
+						      	}
+						  	  }
+						      autoFocus
+						      onBlur={() => this.setState({ isEditing: false })}
+						    /> :
+						    <Text
+						      style={styles.freeTextEditable}
+						    >
+								{ !innerItems.selectedValue ? innerItems.extraName : 
+									innerItems.selectedValue
+								} 
+							    {
+							    /*
+								{ !this.state.txt ? innerItems.extraName : 
+									this.state.txt
+								} 
+							  	*/
+							  	}
+						    </Text>
+
+						  }
+						</View>
+					</TouchableHighlight>
+					
+					)
 				}
 				//this.state.propsOptions[i][i2][i3]
 				else{
-				
+					let activeSelection = true; // this.state[key +'-active'];
+		            if(innerItems.selectedValue == "" || innerItems.selectedValue == false){
+						activeSelection = false;          	
+		            }
 
-				ret.push(
-				  <TouchableHighlight
-				    onPress={ 
-				    	(evt) => {
-				    		innerItems.selectedValue = "true";	
-				    		this.choiceSelected(key,evt,listItems);	
-				    	}
-				    	
-				    	//innerItems.seletedValue = true
-				    } 
-				    key={key}>
-				    <View style={{...styles.selectableParent,
-				    backgroundColor: this.state[key +'-active'] ? this.state.activeColor : this.state.inactiveColor,
-				    }}>
-				      <View style={{margin:15}}>
-				        <View style={{...styles.selectableCheckbox,
-				        backgroundColor: this.state[key +'-active'] ? this.state.activeColor2 : this.state.inactiveColor2,
-				        }}>
-				          <Image
-				            style={{
-				              width: 32, 
-				              height: 32,
-				              opacity: this.state[key +'-active'] ? this.state.activeIconOpacity : 0,
-				            }}
-				            source={require('../assets/icons/times_320_320.png')}
-				          />
-				        </View>
-				      </View>
-				      <View style={styles.selectableContent}>
-				        <Text>
-				          { this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
-				          {innerItems.questionSafename}
-				          {innerItems.extraName != "" ? "\n" : null}
-				          {innerItems.extraName}
-				          # {innerItems.selectedValue}
-				        </Text>
-				      </View>
-				    </View>
-				  </TouchableHighlight>
-				);
+					ret.push(
+					  <TouchableHighlight
+					    onPress={ 
+					    	(evt) => {
+					    		innerItems.selectedValue = !activeSelection;	
+					    		this.choiceSelected(key,evt,listItems);	
+					    	}
+					    	
+					    	//innerItems.seletedValue = true
+					    } 
+					    key={key}>
+					    <View style={{...styles.selectableParent,
+					    backgroundColor: activeSelection ? this.state.activeColor : this.state.inactiveColor,
+					    }}>
+					      <View style={{margin:15}}>
+					        <View style={{...styles.selectableCheckbox,
+					        backgroundColor: activeSelection ? this.state.activeColor2 : this.state.inactiveColor2,
+					        }}>
+					          <Image
+					            style={{
+					              width: 32, 
+					              height: 32,
+					              opacity: activeSelection ? this.state.activeIconOpacity : 0,
+					            }}
+					            source={require('../assets/icons/times_320_320.png')}
+					          />
+					        </View>
+					      </View>
+					      <View style={styles.selectableContent}>
+					        <Text>
+					          { this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
+					          {innerItems.questionSafename}
+					          {innerItems.extraName != "" ? "\n" : null}
+					          {innerItems.extraName}
+					          # {innerItems.selectedValue}
+					        </Text>
+					      </View>
+					    </View>
+					  </TouchableHighlight>
+					);
 				}
 				return innerItems;
 		      });
@@ -243,9 +301,19 @@ class Lister extends Component {
 		              );
 				  }
 
+				  //listataan 1-5 vaihtoehdot
 		          let ret2 = []; 
 		          let listOfChoices = innerItems.list.map( (selList, i4) => {
 		            var key = "selectListChoice|" + item.id + "_" + innerItems.id + "_" + itemInner.id + "_" + i4;
+		            
+		            
+		            let activeSelection = false; // this.state[key +'-active'];
+		            if( (i4 + 1) == innerItems.selectedValue){
+						activeSelection = true;          	
+		            }
+		            
+
+		            console.log(innerItems.selectedValue);
 		            ret2.push(  
 		              <TouchableHighlight
 			                onPress={  
@@ -256,7 +324,7 @@ class Lister extends Component {
 					    } 
 		                key={key}>
 		                  <View style={{...styles.selectableChoice,
-		                  backgroundColor: this.state[key +'-active'] ? this.state.activeColor : this.state.inactiveColor,
+		                  backgroundColor: activeSelection ? this.state.activeColor : this.state.inactiveColor,
 		                  }}>
 		                    <Text>
 		                      { this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
@@ -282,7 +350,8 @@ class Lister extends Component {
 		    }
 		  });
 
-			
+		  return item
+
 		  var key = "masterView|" + item.id;
 		  ret.push(
 		    <View key={key}>
@@ -296,8 +365,8 @@ class Lister extends Component {
 		return ret;
 	}
 
-
-	render() {
+	
+	render() {	
 		return (
 			<View key="masterView">
 				<TouchableHighlight 
@@ -309,9 +378,9 @@ class Lister extends Component {
 		        		Debug {this.state.showDebug}
 		        	</Text>
 		        </TouchableHighlight>
-				<TouchableHighlight style={styles.button} onPress={(evt) => this.storeData(this.state.txt,"tieto1") }><Text>Test write</Text></TouchableHighlight>
-				<TouchableHighlight style={styles.button} onPress={(evt) => this.retrieveData("tieto1") }><Text>Test read</Text></TouchableHighlight>
-				{this.createEl()}
+				{
+					this.createEl()
+				}
 			</View>
 		);
 	}
