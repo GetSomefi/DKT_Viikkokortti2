@@ -21,13 +21,34 @@ var height = Dimensions.get('window').height; //full height
 class Lister extends Component {
 	constructor(props) {
 		super(props);
-		//console.log(this.props.options);
+		console.log(this.props.date);
+		
+		let preparedDate = this.props.date;
+		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
+
+		let preparedDatePrev = this.props.date;
+		preparedDatePrev.setDate(preparedDatePrev.getDate() - 1);
+		let preparedDateSafePrev = preparedDatePrev.getDate() + "." + preparedDatePrev.getMonth() +"."+ preparedDatePrev.getFullYear();
+
+		let preparedDateNext = this.props.date;
+		preparedDateNext = new Date( preparedDateNext.setDate(preparedDateNext.getDate() + 2) );
+		let preparedDateSafeNext = preparedDateNext.getDate() + "." + preparedDateNext.getMonth() +"."+ preparedDateNext.getFullYear();
+
+		console.log('preparedDateSafePrev',preparedDateSafePrev);
+		console.log('preparedDateSafeNext',preparedDateSafeNext); 
+
 		this.state = {
 		  showDebug:false, //shows keys if those are set inside elements
 
 		  tc: "white",
 		  bg: "blue",
 		  propsOptions:this.props.options,
+		  date:preparedDate,
+		  dateSafe:preparedDateSafe,
+		  datePrev:preparedDatePrev,
+		  datePrevSafe:preparedDateSafePrev,
+		  dateNext:preparedDateNext,
+		  dateNextSafe:preparedDateSafeNext,
 		  activeColor:"#8bc586", //green
 		  inactiveColor:"white",
 		  activeColor2:"#f7f7f7", //lighter gray
@@ -73,7 +94,7 @@ class Lister extends Component {
 		*/
 	}
 
-	t = () => {
+	dateChanger = () => {
 		console.log('test'); 
 	}
 
@@ -369,6 +390,29 @@ class Lister extends Component {
 	render() {	
 		return (
 			<View key="masterView">
+				<View style={styles.dateChangeParent} key="dateChanger">
+					<TouchableHighlight 
+						style={{...styles.button, ...styles.inlineSized}} 
+			        	onPress={ () => this.changeDate("prev") }>
+			        	<Text>
+			        		Edellinen ({this.state.datePrevSafe})
+			        	</Text>
+			        </TouchableHighlight>
+			        <View
+			        	style={{...styles.button, ...styles.inlineSized}} >
+			        	<Text>
+			        		{this.state.dateSafe}
+			        	</Text>
+			        </View>
+					<TouchableHighlight 
+						style={{...styles.button, ...styles.inlineSized}}  
+			        	onPress={ () => this.changeDate("next") }>
+			        	<Text>
+			        		Seuraava ({this.state.dateNextSafe})
+			        	</Text>
+			        </TouchableHighlight>
+				</View>
+
 				<TouchableHighlight 
 					style={{...styles.button,
 		        		backgroundColor: this.state.showDebug ? this.state.activeColor : this.state.inactiveColor,
@@ -378,9 +422,12 @@ class Lister extends Component {
 		        		Debug {this.state.showDebug}
 		        	</Text>
 		        </TouchableHighlight>
+
 				{
+					//listing starts here
 					this.createEl()
 				}
+
 			</View>
 		);
 	}
@@ -472,6 +519,25 @@ const styles = StyleSheet.create({
 
   //button
   button: {
+    height:perfectChecbox,
+    alignItems:"center",
+    justifyContent:"center",
+    borderRadius:borderRadius,
+    //borderWidth:1,
+    //borderColor:'#d6d7da',
+    margin:padding,
+    backgroundColor: '#FFF',
+  },
+
+  //date change
+  dateChangeParent: {
+    flex:3,
+    flexDirection:'row',
+  },
+  inlineSized: {
+	flex:1,
+  },
+  buttonOneThird: {
     height:perfectChecbox,
     alignItems:"center",
     justifyContent:"center",

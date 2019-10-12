@@ -16,8 +16,8 @@ import MoveableButton from './components/MoveableButton.js';
 import HeaderElem from './components/HeaderElem.js'; 
 import Lister from './components/DataFragment.js'; 
 
-
-var options = [
+let date = new Date();
+let options = [
   //käyttäytyminen
   {
     id:0,
@@ -432,11 +432,15 @@ const App = () => {
         
         <View style={styles.body}>
           <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
-            <Lister options={options} /> 
+            <Lister options={options} date={date} /> 
           </View>
+          {
+          /*
           <View style={{alignSelf: 'stretch', height: 200, backgroundColor: 'red'}}>
             <HeaderElem joku="jotain" /> 
-          </View>  
+          </View> 
+          */
+          }
         </View> 
 
       </ScrollView>
