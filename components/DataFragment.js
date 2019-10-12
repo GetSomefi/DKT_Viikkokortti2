@@ -161,29 +161,48 @@ class Lister extends Component {
 	createElStored = async() => {
 		//retrieve data and if it does not exist (i.e. new day) it runs empty new createEl;
 		console.log('fetching saved data');
-		console.log('using date', this.state.date); 
+		//console.log('using date', this.state.date); 
 		//var d = new Date();
 		let d = this.state.date;
 		let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
-
-
 		let changedDateSafe = this.props.date.getDate() + "." + this.props.date.getMonth() +"."+ this.props.date.getFullYear();
+		
+		let today = new Date();
+		today = today.getDate() + "_" + today.getMonth() + "_" + today.getYear();
+		
+		//console.log('today == key', today +"=="+ key); 
+		let showNextDayButton = true;
+		if(today == key){
+			showNextDayButton = false;
+		}
+
 		this.setState({
 			activeKey:key,
-			dateSafe:changedDateSafe
+			dateSafe:changedDateSafe,
+			showNextDayButton:showNextDayButton,
+			loading:true
 		});
 
+		//doRender
+		//with this whole datafragment can be hidden (if false) 
 		try {
 			//const value = AsyncStorage.getItem(key);
 			const value = await AsyncStorage.getItem(key);
 			if (value !== null) {
 				console.log('dataa on');
 				this.setState({ 
-				  propsOptions: JSON.parse(value)
+				  propsOptions: JSON.parse(value),
+				  doRender:true,
+				  loading:false
 				});
 
 			}else{
 				console.log('dataa ei ole');
+				this.setState({
+					propsOptions: this.props.options,
+					doRender:true,
+					loading:false
+				});
 			}
 		} catch (error) {
 			// Error retrieving data
@@ -354,13 +373,11 @@ class Lister extends Component {
 		          let listOfChoices = innerItems.list.map( (selList, i4) => {
 		            var key = "selectListChoice|" + item.id + "_" + innerItems.id + "_" + itemInner.id + "_" + i4;
 		            
-		            
 		            let activeSelection = false; // this.state[key +'-active'];
 		            if( (i4 + 1) == innerItems.selectedValue){
-						activeSelection = true;          	
+						activeSelection = true;        	
 		            }
 		            
-
 		            console.log(innerItems.selectedValue);
 		            ret2.push(  
 		              <TouchableHighlight
@@ -431,14 +448,19 @@ class Lister extends Component {
 			        		{this.state.dateSafe}
 			        	</Text>
 			        </View>
+
+			        { this.state.showNextDayButton ?
 					<TouchableHighlight 
 						style={{...styles.button, ...styles.inlineSized}}  
 			        	onPress={ () => this.changeDate("next") }>
 			        	<Text>
 			        		Seuraava
 			        	</Text>
-			        </TouchableHighlight>
+			        </TouchableHighlight> : null
+			    	}
 				</View>
+
+				{/*
 				<View>
 					<Text>
 		        		{this.state.activeKey}
@@ -454,8 +476,10 @@ class Lister extends Component {
 		        		Debug {this.state.showDebug}
 		        	</Text>
 		        </TouchableHighlight>
+		    	*/}
 
-				{
+				{ this.state.loading ?
+					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
 					//listing starts here
 					this.createEl()
 				}
@@ -474,6 +498,13 @@ let perfectChecbox = perfectCheckboxSize;
 const styles = StyleSheet.create({
   debugTexts:{
     backgroundColor:"red"
+  },
+
+  loadingBar:{
+    fontSize: perfectCheckboxSize,
+    padding:padding,
+    justifyContent:"center",
+    alignItems:"center",
   },
 
   header1:{
