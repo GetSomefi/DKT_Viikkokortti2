@@ -16,7 +16,7 @@ import MoveableButton from './components/MoveableButton.js';
 import HeaderElem from './components/HeaderElem.js'; 
 import Lister from './components/DataFragment.js'; 
 
-let date = new Date();
+const date = new Date();
 let options = [
   //käyttäytyminen
   {

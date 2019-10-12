@@ -26,29 +26,17 @@ class Lister extends Component {
 		let preparedDate = this.props.date;
 		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
 
-		let preparedDatePrev = this.props.date;
-		preparedDatePrev.setDate(preparedDatePrev.getDate() - 1);
-		let preparedDateSafePrev = preparedDatePrev.getDate() + "." + preparedDatePrev.getMonth() +"."+ preparedDatePrev.getFullYear();
-
-		let preparedDateNext = this.props.date;
-		preparedDateNext = new Date( preparedDateNext.setDate(preparedDateNext.getDate() + 2) );
-		let preparedDateSafeNext = preparedDateNext.getDate() + "." + preparedDateNext.getMonth() +"."+ preparedDateNext.getFullYear();
-
-		console.log('preparedDateSafePrev',preparedDateSafePrev);
-		console.log('preparedDateSafeNext',preparedDateSafeNext); 
-
 		this.state = {
 		  showDebug:false, //shows keys if those are set inside elements
 
 		  tc: "white",
 		  bg: "blue",
+
+		  activeKey:"",
+
 		  propsOptions:this.props.options,
 		  date:preparedDate,
 		  dateSafe:preparedDateSafe,
-		  datePrev:preparedDatePrev,
-		  datePrevSafe:preparedDateSafePrev,
-		  dateNext:preparedDateNext,
-		  dateNextSafe:preparedDateSafeNext,
 		  activeColor:"#8bc586", //green
 		  inactiveColor:"white",
 		  activeColor2:"#f7f7f7", //lighter gray
@@ -63,6 +51,11 @@ class Lister extends Component {
 	componentDidMount(){
 		this.createElStored();
 	}
+	
+	componentDidUpdate(){
+		//this.createElStored();
+	}
+	
 
 	//tämä tekee keyn ja lähettää tallennettavaksi
 	choiceSelected = (key,evt,el) => {
@@ -80,7 +73,8 @@ class Lister extends Component {
 		//console.log('state', this.state);
 
 		//console.log('el', el);
-		var d = new Date();
+		//var d = new Date();
+		let d = this.state.date;
 		let date = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
 		this.storeData(el,date);
 		//el.questionSafename = "sad";
@@ -94,8 +88,27 @@ class Lister extends Component {
 		*/
 	}
 
-	dateChanger = () => {
-		console.log('test'); 
+	changeDate = (changeDateTo) => {
+		console.log('change date direction ' + changeDateTo);
+		console.log('date in ', this.props.date);
+
+		let changedDate;
+		if(changeDateTo == "prev"){
+			changedDate = this.props.date;
+			changedDate.setDate(changedDate.getDate() - 1);
+			console.log('date prev ', changedDate);
+		}else if(changeDateTo == "next"){
+			changedDate = this.props.date;
+			changedDate.setDate(changedDate.getDate() + 1);
+			console.log('date prev ', changedDate);
+		}
+
+		this.setState({ 
+		  date: changedDate
+		});
+
+		console.log('date out ', this.props.date); 
+		this.createElStored();
 	}
 
 	setSelectionActive = (key) => {
@@ -126,6 +139,7 @@ class Lister extends Component {
 	};
 
 	retrieveData = async () => {
+	  /*
 	  console.log('yrittää');
 	  var d = new Date();
 	  let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
@@ -140,14 +154,27 @@ class Lister extends Component {
 	    // Error retrieving data
 	    console.log('Retrieve error',error); 
 	  }
+	  */
 	};
 
+	//createElStored = () => {
 	createElStored = async() => {
 		//retrieve data and if it does not exist (i.e. new day) it runs empty new createEl;
 		console.log('fetching saved data');
-		var d = new Date();
+		console.log('using date', this.state.date); 
+		//var d = new Date();
+		let d = this.state.date;
 		let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
+
+
+		let changedDateSafe = this.props.date.getDate() + "." + this.props.date.getMonth() +"."+ this.props.date.getFullYear();
+		this.setState({
+			activeKey:key,
+			dateSafe:changedDateSafe
+		});
+
 		try {
+			//const value = AsyncStorage.getItem(key);
 			const value = await AsyncStorage.getItem(key);
 			if (value !== null) {
 				console.log('dataa on');
@@ -395,7 +422,7 @@ class Lister extends Component {
 						style={{...styles.button, ...styles.inlineSized}} 
 			        	onPress={ () => this.changeDate("prev") }>
 			        	<Text>
-			        		Edellinen ({this.state.datePrevSafe})
+			        		Edellinen
 			        	</Text>
 			        </TouchableHighlight>
 			        <View
@@ -408,9 +435,14 @@ class Lister extends Component {
 						style={{...styles.button, ...styles.inlineSized}}  
 			        	onPress={ () => this.changeDate("next") }>
 			        	<Text>
-			        		Seuraava ({this.state.dateNextSafe})
+			        		Seuraava
 			        	</Text>
 			        </TouchableHighlight>
+				</View>
+				<View>
+					<Text>
+		        		{this.state.activeKey}
+		        	</Text>
 				</View>
 
 				<TouchableHighlight 
