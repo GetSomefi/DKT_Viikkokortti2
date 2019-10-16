@@ -17,7 +17,7 @@ import HeaderElem from './components/HeaderElem.js';
 import Lister from './components/DataFragment.js'; 
 
 const date = new Date();
-let options = [
+const options = [
   //käyttäytyminen
   {
     id:0,

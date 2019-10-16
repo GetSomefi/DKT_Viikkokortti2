@@ -17,6 +17,12 @@ import {
 
 var width = Dimensions.get('window').width; //full width
 var height = Dimensions.get('window').height; //full height
+let keyAppend = "t18_";
+
+let original;
+function copyOriginal(ori) {
+  return JSON.parse(JSON.stringify(ori));
+}
 
 class Lister extends Component {
 	constructor(props) {
@@ -26,6 +32,10 @@ class Lister extends Component {
 		let preparedDate = this.props.date;
 		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
 
+		original = copyOriginal(this.props.options);
+		const originalOptions = copyOriginal(this.props.options);
+		console.log('originalOptions',originalOptions); 
+
 		this.state = {
 		  showDebug:false, //shows keys if those are set inside elements
 
@@ -33,8 +43,10 @@ class Lister extends Component {
 		  bg: "blue",
 
 		  activeKey:"",
+		  
+		  originalOptions:originalOptions,
 
-		  propsOptions:this.props.options,
+		  propsOptions:originalOptions,
 		  date:preparedDate,
 		  dateSafe:preparedDateSafe,
 		  activeColor:"#8bc586", //green
@@ -50,11 +62,19 @@ class Lister extends Component {
 
 	componentDidMount(){
 		this.createElStored();
+		//this.createEl();
 	}
-	
-	componentDidUpdate(){
+	componentWillUnmount(){
 		//this.createElStored();
+		//this.createEl();
 	}
+	/*
+	componentDidUnmount(){
+
+	}
+	componentDidUpdate(){
+	}
+	*/
 	
 
 	//tämä tekee keyn ja lähettää tallennettavaksi
@@ -74,9 +94,13 @@ class Lister extends Component {
 
 		//console.log('el', el);
 		//var d = new Date();
+		/*
 		let d = this.state.date;
 		let date = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
 		this.storeData(el,date);
+		*/
+		this.storeData(el,this.state.activeKey);
+		
 		//el.questionSafename = "sad";
 		//return el;
 		
@@ -89,25 +113,25 @@ class Lister extends Component {
 	}
 
 	changeDate = (changeDateTo) => {
-		console.log('change date direction ' + changeDateTo);
-		console.log('date in ', this.props.date);
+		//console.log('change date direction ' + changeDateTo);
+		//console.log('date in ', this.props.date);
 
 		let changedDate;
 		if(changeDateTo == "prev"){
 			changedDate = this.props.date;
 			changedDate.setDate(changedDate.getDate() - 1);
-			console.log('date prev ', changedDate);
+			//console.log('date prev ', changedDate);
 		}else if(changeDateTo == "next"){
 			changedDate = this.props.date;
 			changedDate.setDate(changedDate.getDate() + 1);
-			console.log('date prev ', changedDate);
+			//console.log('date prev ', changedDate);
 		}
 
 		this.setState({ 
 		  date: changedDate
 		});
 
-		console.log('date out ', this.props.date); 
+		//console.log('date out ', this.props.date); 
 		this.createElStored();
 	}
 
@@ -133,9 +157,11 @@ class Lister extends Component {
 			// Error saving data
 			console.log('Save error',error); 
 		}
+		/*
 		console.log('Key:', key);
 		console.log('Data:', data);
 		console.log('Alkup', this.props.options); 
+		*/
 	};
 
 	retrieveData = async () => {
@@ -163,12 +189,15 @@ class Lister extends Component {
 		console.log('fetching saved data');
 		//console.log('using date', this.state.date); 
 		//var d = new Date();
+
+		
+
 		let d = this.state.date;
-		let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
+		let key = keyAppend + d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
 		let changedDateSafe = this.props.date.getDate() + "." + this.props.date.getMonth() +"."+ this.props.date.getFullYear();
 		
 		let today = new Date();
-		today = today.getDate() + "_" + today.getMonth() + "_" + today.getYear();
+		today = keyAppend + today.getDate() + "_" + today.getMonth() + "_" + today.getYear();
 		
 		//console.log('today == key', today +"=="+ key); 
 		let showNextDayButton = true;
@@ -193,15 +222,27 @@ class Lister extends Component {
 				this.setState({ 
 				  propsOptions: JSON.parse(value),
 				  doRender:true,
-				  loading:false
+				  loading:false,
+				  reset:false,
+				  takeOriginal:false
 				});
 
 			}else{
-				console.log('dataa ei ole');
+				console.log('dataa ei ole (key)', key);
+				//console.log('kun dataa['+this.state.activeKey+'] ei ole obj', this.state.originalOptions); 
+				
+				console.log('ota orginaali');
+				console.log('state.ori',this.state.originalOptions[0].items[0].items[0]); 
+				console.log('muuttuja original',original[0].items[0].items[0]);  
+				let copyPropsOptions_ = copyOriginal(this.state.originalOptions);// [...original]
+				copyPropsOptions = [...copyPropsOptions_];
+
 				this.setState({
-					propsOptions: this.props.options,
+					propsOptions: copyPropsOptions,
 					doRender:true,
-					loading:false
+					loading:false,
+					reset:true,
+					takeOriginal:true
 				});
 			}
 		} catch (error) {
@@ -211,22 +252,42 @@ class Lister extends Component {
 	};
 
 	createEl = () => {
+		console.log('--createEl--', this.state.reset); 
 		//this.state.propsOptions[i]
-		let copyPropsOptions = [...this.state.propsOptions];
+		
+		/*
+		///let copyPropsOptions = [...this.state.propsOptions];
+		console.log('oriPropsOptions', this.props.options);
+		let copyPropsOptions = this.state.propsOptions;
+		
+
+		console.log('copyPropsOptions', copyPropsOptions); 
 		//this.createElStored();
+		*/
+		/*
+		let copyPropsOptions; 
+		if(this.state.takeOriginal){
+			console.log('ota orginaali');
+			copyPropsOptions = [...copyPropsOptions_];
+		}else{
+			console.log('ota talletettu');
+			copyPropsOptions = [...this.state.propsOptions];
+		}
+		*/
+		let copyPropsOptions = [...this.state.propsOptions];
 
 		let ret = [];
-		let listItems = copyPropsOptions.map((item, i) => {
+		//let listItems = copyPropsOptions.map((item, i) => {
+		let listItems = copyPropsOptions.map((item, i) => { 
 		  //console.log('das',this.state.bg);  
 		  //console.log('item',item); 
-		  var key = "id|" + item.id;
+		  var key = "id|" + item.id; 
 		  ret.push(	  	
 		    <View key={key}>
 				{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
 		      	<Text style={styles.header1}>{item.groupSafename}</Text>
 		    </View>
 		  ); 
-
 
 		  //this.state.propsOptions[i][i2]
 		  item.items.map((itemInner, i2) => {
@@ -235,7 +296,7 @@ class Lister extends Component {
 
 		      //this.state.propsOptions[i][i2][i3]
 		      return itemInner.items.map( (innerItems, i3) => {
-		        var key = "questionName|" + item.id + "_" + itemInner.id + "_" + innerItems.id;
+		        var key = this.state.activeKey + "questionName|" + item.id + "_" + itemInner.id + "_" + innerItems.id;
 		        let keyArray = [item.id, itemInner.id, innerItems.id];
 				if(innerItems.type == "freetext"){ 
 					
@@ -289,34 +350,34 @@ class Lister extends Component {
 				}
 				//this.state.propsOptions[i][i2][i3]
 				else{
-					let activeSelection = true; // this.state[key +'-active'];
-		            if(innerItems.selectedValue == "" || innerItems.selectedValue == false){
-						activeSelection = false;          	
+					
+					//console.log( "alko huum lää" );
+		            //console.log( innerItems.selectedValue );
+		            if(innerItems.selectedValue == ""){
+						innerItems.selectedValue = false;          	
 		            }
 
 					ret.push(
 					  <TouchableHighlight
 					    onPress={ 
 					    	(evt) => {
-					    		innerItems.selectedValue = !activeSelection;	
+					    		innerItems.selectedValue = !innerItems.selectedValue;	
 					    		this.choiceSelected(key,evt,listItems);	
 					    	}
-					    	
-					    	//innerItems.seletedValue = true
 					    } 
 					    key={key}>
 					    <View style={{...styles.selectableParent,
-					    backgroundColor: activeSelection ? this.state.activeColor : this.state.inactiveColor,
+					    backgroundColor: innerItems.selectedValue ? this.state.activeColor : this.state.inactiveColor,
 					    }}>
 					      <View style={{margin:15}}>
 					        <View style={{...styles.selectableCheckbox,
-					        backgroundColor: activeSelection ? this.state.activeColor2 : this.state.inactiveColor2,
+					        backgroundColor: innerItems.selectedValue ? this.state.activeColor2 : this.state.inactiveColor2,
 					        }}>
 					          <Image
 					            style={{
 					              width: 32, 
 					              height: 32,
-					              opacity: activeSelection ? this.state.activeIconOpacity : 0,
+					              opacity: innerItems.selectedValue ? this.state.activeIconOpacity : 0,
 					            }}
 					            source={require('../assets/icons/times_320_320.png')}
 					          />
@@ -339,7 +400,7 @@ class Lister extends Component {
 		      });
 		    }
 		    else{
-		      var key = "innerGroupName" + item.id + "_" + itemInner.id;          
+		      var key = this.state.activeKey + "innerGroupName" + item.id + "_" + itemInner.id;          
 		      if( itemInner.type == "selection" ){
 		        
 		        if(itemInner.questionSafename){
@@ -355,7 +416,7 @@ class Lister extends Component {
 		        }
 
 		        return itemInner.items.map( (innerItems, i3) => { 
-		          var key = "listsQuestionName|" + item.id + "_" + innerItems.id + "_" + itemInner.id;
+		          var key = this.state.activeKey + "listsQuestionName|" + item.id + "_" + innerItems.id + "_" + itemInner.id;
 		          
 		          if(innerItems.safename){
 		              ret.push(
@@ -371,13 +432,25 @@ class Lister extends Component {
 				  //listataan 1-5 vaihtoehdot
 		          let ret2 = []; 
 		          let listOfChoices = innerItems.list.map( (selList, i4) => {
-		            var key = "selectListChoice|" + item.id + "_" + innerItems.id + "_" + itemInner.id + "_" + i4;
+		            var key = this.state.activeKey + "selectListChoice|" + item.id + "_" + innerItems.id + "_" + itemInner.id + "_" + i4;
 		            
-		            let activeSelection = false; // this.state[key +'-active'];
+		            /*
+		            activeSelection = this.state[key +'-active']; // this.state[key +'-active'];
+		            console.log( innerItems.selectedValue );
 		            if( (i4 + 1) == innerItems.selectedValue){
 						activeSelection = true;        	
 		            }
-		            
+		            */
+
+		            let activeSelection;
+		            if(innerItems.selectedValue == ""){
+						activeSelection = false;          	
+		            }
+		            if( (i4 + 1) == innerItems.selectedValue){
+						activeSelection = true;        	
+		            }
+
+
 		            console.log(innerItems.selectedValue);
 		            ret2.push(  
 		              <TouchableHighlight
@@ -401,7 +474,7 @@ class Lister extends Component {
 		            return selList;
 		          });
 
-		          var key = "theQuestionChoices|" + item.id + "_" + innerItems.id + "_" + itemInner.id;
+		          var key = this.state.activeKey + "theQuestionChoices|" + item.id + "_" + innerItems.id + "_" + itemInner.id;
 		          ret.push(
 		            <View key={key} style={styles.selectableChoiceParent}>
 		              {ret2} 
@@ -417,7 +490,7 @@ class Lister extends Component {
 
 		  return item
 
-		  var key = "masterView|" + item.id;
+		  var key = this.state.activeKey + "masterView|" + item.id;
 		  ret.push(
 		    <View key={key}>
 		      {ret}
@@ -478,7 +551,13 @@ class Lister extends Component {
 		        </TouchableHighlight>
 		    	*/}
 
-				{ this.state.loading ?
+		    	{/*
+		    		Vielä joku ongelma vanhan datan päivittämisen kanssa. 
+		    		Kyseinen data siirtyy seuraavaan päiväänkin (siis se näkyy aktiivisena vaikka 
+		    		tuskin se sitä on).
+		    	*/}
+				{ 	
+					this.state.loading ?
 					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
 					//listing starts here
 					this.createEl()
