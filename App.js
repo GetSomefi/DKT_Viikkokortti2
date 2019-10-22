@@ -20,7 +20,10 @@ import Lister from './components/DataFragment.js';
 const date = new Date();
 const options = [
   {
-    note:true
+    note:true,
+    safename:"Ajatukset",
+    extraName:"",
+    selectedValue:""
   },
   //käyttäytyminen
   {

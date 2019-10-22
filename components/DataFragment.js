@@ -78,6 +78,18 @@ class Lister extends Component {
 	}
 	*/
 	
+	updateDayNote = (value) => {
+		let copyPropsOptions = [...this.state.propsOptions];
+		let listItems = copyPropsOptions.map((item, i) => {
+			if(item.note){
+				console.log('------tämä on note');
+				console.log('--', item.selectedValue);
+				item.selectedValue = value;
+			}
+			return item;
+		});
+		this.storeData(listItems,this.state.activeKey);
+	}
 
 	//(DEPRECATED: tämä tekee keyn) ja lähettää tallennettavaksi
 	choiceSelected = (key,evt,el) => {
@@ -284,7 +296,8 @@ class Lister extends Component {
 		let listItems = copyPropsOptions.map((item, i) => {
 
 		  if(item.note){
-		  	console.log('------tämä on note'); 
+		  	console.log('------tämä on note');
+		  	console.log('--', item.selectedValue);
 		  }else{
 		  	console.log('ei note'); 
 
@@ -576,10 +589,11 @@ class Lister extends Component {
 						<TextInput
 							autoFocus
 							multiline={true}
-							value="Kirjoita"
+							value={this.state.propsOptions[0].selectedValue}
 							onChangeText={
 								(value) => {
-									this.setState({ dayNoteTxt: value })
+									this.setState({ dayNoteTxt: value });
+									this.updateDayNote(value);
 								}
 							}
 							onBlur={() => 
