@@ -27,7 +27,8 @@ function copyOriginal(ori) {
 class Lister extends Component {
 	constructor(props) {
 		super(props);
-		console.log(this.props.date);
+		console.log("date got: ", this.props.date);
+		console.log("day note status: ", this.props.dayNote);
 		
 		let preparedDate = this.props.date;
 		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
@@ -37,6 +38,7 @@ class Lister extends Component {
 		console.log('originalOptions',originalOptions); 
 
 		this.state = {
+		  dayNoteOn:this.props.dayNote,
 		  showDebug:false, //shows keys if those are set inside elements
 
 		  tc: "white",
@@ -77,7 +79,7 @@ class Lister extends Component {
 	*/
 	
 
-	//tämä tekee keyn ja lähettää tallennettavaksi
+	//(DEPRECATED: tämä tekee keyn) ja lähettää tallennettavaksi
 	choiceSelected = (key,evt,el) => {
 		//console.log("-- key to store",key);
 
@@ -232,8 +234,8 @@ class Lister extends Component {
 				//console.log('kun dataa['+this.state.activeKey+'] ei ole obj', this.state.originalOptions); 
 				
 				console.log('ota orginaali');
-				console.log('state.ori',this.state.originalOptions[0].items[0].items[0]); 
-				console.log('muuttuja original',original[0].items[0].items[0]);  
+				//console.log('state.ori',this.state.originalOptions[0].items[0].items[0]); 
+				//console.log('muuttuja original',original[0].items[0].items[0]);  
 				let copyPropsOptions_ = copyOriginal(this.state.originalOptions);// [...original]
 				copyPropsOptions = [...copyPropsOptions_];
 
@@ -252,7 +254,8 @@ class Lister extends Component {
 	};
 
 	createEl = () => {
-		console.log('--createEl--', this.state.reset); 
+		//console.log('--day note--', this.state.dayNoteOn);
+		//console.log('--createEl--', this.state.reset); 
 		//this.state.propsOptions[i]
 		
 		/*
@@ -278,7 +281,13 @@ class Lister extends Component {
 
 		let ret = [];
 		//let listItems = copyPropsOptions.map((item, i) => {
-		let listItems = copyPropsOptions.map((item, i) => { 
+		let listItems = copyPropsOptions.map((item, i) => {
+
+		  if(item.note){
+		  	console.log('------tämä on note'); 
+		  }else{
+		  	console.log('ei note'); 
+
 		  //console.log('das',this.state.bg);  
 		  //console.log('item',item); 
 		  var key = "id|" + item.id; 
@@ -496,17 +505,18 @@ class Lister extends Component {
 		      {ret}
 		    </View>
 		  ); 
-
+		  }
 		});
 
 		//console.log(listItems);
 		return ret;
+
 	}
 
 	
-	render() {	
+	render() {
 		return (
-			<View key="masterView">
+			<View style={{paddingTop:15}} key="masterView">
 				<View style={styles.dateChangeParent} key="dateChanger">
 					<TouchableHighlight 
 						style={{...styles.button, ...styles.inlineSized}} 
@@ -551,18 +561,41 @@ class Lister extends Component {
 		        </TouchableHighlight>
 		    	*/}
 
-		    	{/*
-		    		Vielä joku ongelma vanhan datan päivittämisen kanssa. 
-		    		Kyseinen data siirtyy seuraavaan päiväänkin (siis se näkyy aktiivisena vaikka 
-		    		tuskin se sitä on).
-		    	*/}
+				{ 	!this.props.dayNote ?
+					//parentista (app.js) daynote on false. Älä näytä lomaketta
+					<View style={styles.loadingBar}><Text>Ei notea</Text></View> :
+					//parentista (app.js) daynote nappi painettiin päälle	
+				    <View style={{...styles.freeTextParent,
+				    	backgroundColor: this.state.dayNoteIsEditing ? this.state.activeColor3 : this.state.inactiveColor3
+					}}>
+						<Text style={styles.labelHeader}>
+						Päivähuomio
+						</Text>
+
+
+						<TextInput
+							autoFocus
+							multiline={true}
+							value="Kirjoita"
+							onChangeText={
+								(value) => {
+									this.setState({ dayNoteTxt: value })
+								}
+							}
+							onBlur={() => 
+								this.setState({ dayNoteIsEditing: false })
+							}
+						/>
+
+					  
+					</View>
+				}
 				{ 	
 					this.state.loading ?
 					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
 					//listing starts here
 					this.createEl()
 				}
-
 			</View>
 		);
 	}

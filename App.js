@@ -6,7 +6,8 @@ import {
   View,
   Text,
   StatusBar,
-  Dimensions
+  Dimensions,
+  TouchableHighlight,
 } from 'react-native';
 
 var width = Dimensions.get('window').width; //full width
@@ -18,6 +19,9 @@ import Lister from './components/DataFragment.js';
 
 const date = new Date();
 const options = [
+  {
+    note:true
+  },
   //käyttäytyminen
   {
     id:0,
@@ -424,36 +428,67 @@ const options = [
 ];
 
 //alignSelf: 'stretch' = fullwidth
-const App = () => { 
-  return (
-    
-    <SafeAreaView>
-      <ScrollView>
-        
-        <View style={styles.body}>
-          <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
-            <Lister options={options} date={date} /> 
-          </View>
-          {
-          /*
-          <View style={{alignSelf: 'stretch', height: 200, backgroundColor: 'red'}}>
-            <HeaderElem joku="jotain" /> 
-          </View> 
-          */
-          }
-        </View> 
+//const App = () => { 
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      dayNoteOn:false
+    };
+  }
+  toggleDayNote = () => {
+    let toggler = !this.state.dayNoteOn; 
+    this.setState({ 
+      dayNoteOn: toggler 
+    });
+    console.log('day note', this.state.dayNoteOn);   
+  }
+  render(){
+    return (
+      
+      <SafeAreaView>
 
-      </ScrollView>
-    </SafeAreaView>
-  );
+        <ScrollView>             
+          <View style={styles.body}>
+            <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
+              <Lister options={options} date={date} dayNote={this.state.dayNoteOn} />  
+            </View>
+            { 
+            /*
+            <View style={{alignSelf: 'stretch', height: 200, backgroundColor: 'red'}}>
+              <HeaderElem joku="jotain" /> 
+            </View> 
+            */
+            }
+          </View> 
+        </ScrollView>
+        
+        <View style={{width:width,backgroundColor:'#ffffff40',position:'absolute',flexDirection: 'row',justifyContent: 'space-between',alignSelf:'flex-end'}}>
+            <View style={{flex:1}}><Text></Text></View>
+            <View style={{flex:1}}><Text></Text></View>
+            <TouchableHighlight 
+              onPress={ 
+                (evt) => { 
+                  this.toggleDayNote(); 
+                }
+              }  
+              style={{flex:1,padding:15,backgroundColor:'#607D8B',borderRadius:5,margin:15}}>
+               <Text style={{alignSelf: 'center',color:'#FFF'}}>Päivähuomio</Text>  
+            </TouchableHighlight>
+        </View>
+
+      </SafeAreaView>
+    )
+  }
 };
 
 const styles = StyleSheet.create({
   body: {
     flex:1,
     flexDirection:'column',
-    backgroundColor: '#666',
-    borderColor: '#d6d7da'
+    backgroundColor: '#FFF',
+    borderColor: '#d6d7da',
+    paddingTop:80
   },
   highlightedText: {
     color: 'red',
