@@ -17,7 +17,7 @@ import {
 
 var width = Dimensions.get('window').width; //full width
 var height = Dimensions.get('window').height; //full height
-let keyAppend = "t18_";
+let keyAppend = "t20_";
 
 let original;
 function copyOriginal(ori) {
@@ -27,18 +27,18 @@ function copyOriginal(ori) {
 class Lister extends Component {
 	constructor(props) {
 		super(props);
-		console.log("date got: ", this.props.date);
-		console.log("day note status: ", this.props.dayNote);
+		//console.log("date got: ", this.props.date);
+		//console.log("day note status: ", this.props.dayNote);
 		
 		let preparedDate = this.props.date;
 		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
 
 		original = copyOriginal(this.props.options);
 		const originalOptions = copyOriginal(this.props.options);
-		console.log('originalOptions',originalOptions); 
+		//console.log('originalOptions',originalOptions); 
 
 		this.state = {
-		  dayNoteOn:this.props.dayNote,
+		  dayNote:this.props.dayNote,
 		  showDebug:false, //shows keys if those are set inside elements
 
 		  tc: "white",
@@ -48,6 +48,7 @@ class Lister extends Component {
 		  
 		  originalOptions:originalOptions,
 
+		  //this is to value that is constantly updated and stored
 		  propsOptions:originalOptions,
 		  date:preparedDate,
 		  dateSafe:preparedDateSafe,
@@ -70,16 +71,34 @@ class Lister extends Component {
 		//this.createElStored();
 		//this.createEl();
 	}
+	componentDidUpdate(prevProps){
+		// Typical usage (don't forget to compare props):
+		if (this.props.dayNote !== prevProps.dayNote) {
+			//this.fetchData(this.props.userID);
+			this.setState({
+				dayNote:this.props.dayNote,
+			});
+		}
+	}
 	/*
 	componentDidUnmount(){
 
 	}
-	componentDidUpdate(){
-	}
+
 	*/
-	
+
+  	resetDayNote = (value) => {
+  		console.log('daynote', value);  
+  		this.setState({
+  			dayNote:value
+  		});
+  	}
+
+	//updates daynote
 	updateDayNote = (value) => {
+		console.log('value', value); 
 		let copyPropsOptions = [...this.state.propsOptions];
+		console.log('before', copyPropsOptions); 
 		let listItems = copyPropsOptions.map((item, i) => {
 			if(item.note){
 				console.log('------tämä on note');
@@ -88,10 +107,12 @@ class Lister extends Component {
 			}
 			return item;
 		});
+		console.log('after', listItems); 
+		console.log('this.state.activeKey',this.state.activeKey); 
 		this.storeData(listItems,this.state.activeKey);
 	}
 
-	//(DEPRECATED: tämä tekee keyn) ja lähettää tallennettavaksi
+	//sends any choice to storage
 	choiceSelected = (key,evt,el) => {
 		//console.log("-- key to store",key);
 
@@ -141,7 +162,7 @@ class Lister extends Component {
 			//console.log('date prev ', changedDate);
 		}
 
-		this.setState({ 
+		this.setState({
 		  date: changedDate
 		});
 
@@ -165,7 +186,25 @@ class Lister extends Component {
 	storeData = async (data,key) => {
 		console.log('yrittää'); 
 		try {
+			console.log('data',data); 
 			await AsyncStorage.setItem(key, JSON.stringify(data));
+
+			let dayNoteStoredTemp;
+			let copyPropsOptions = [...data];
+			let listItems = copyPropsOptions.map((item, i) => {
+				if(item !== null){
+					console.log('item.selectedValue ', item.selectedValue); 
+			  		if(item.note){
+			  			dayNoteStoredTemp = item.selectedValue
+			  		}
+		  		}
+		  	});
+
+			this.setState({
+			  dayNoteStored:dayNoteStoredTemp,
+			  dayNoteStoredTemp:dayNoteStoredTemp
+			});
+			console.log('dayNoteStored',this.state.dayNoteStored);
 			
 		} catch (error) {
 			// Error saving data
@@ -176,25 +215,6 @@ class Lister extends Component {
 		console.log('Data:', data);
 		console.log('Alkup', this.props.options); 
 		*/
-	};
-
-	retrieveData = async () => {
-	  /*
-	  console.log('yrittää');
-	  var d = new Date();
-	  let key = d.getDate() + "_" + d.getMonth() + "_" + d.getYear();
-	  try {
-	    const value = await AsyncStorage.getItem(key);
-	    if (value !== null) {
-	      // We have data!!
-	      //console.log(value);
-	      console.log( JSON.parse(value) );
-	    }
-	  } catch (error) {
-	    // Error retrieving data
-	    console.log('Retrieve error',error); 
-	  }
-	  */
 	};
 
 	//createElStored = () => {
@@ -231,21 +251,36 @@ class Lister extends Component {
 		try {
 			//const value = AsyncStorage.getItem(key);
 			const value = await AsyncStorage.getItem(key);
+			const parsedStoredData = JSON.parse(value);
 			if (value !== null) {
-				console.log('dataa on');
+				console.log('dataa on',parsedStoredData);
+
+				let dayNoteStoredTemp;
+				let copyPropsOptions = [...parsedStoredData];
+				let listItems = copyPropsOptions.map((item, i) => {
+					if(item !== null){
+						console.log('item.selectedValue ', item.selectedValue); 
+				  		if(item.note){
+				  			dayNoteStoredTemp = item.selectedValue
+				  		}
+			  		}
+			  	});
+
 				this.setState({ 
-				  propsOptions: JSON.parse(value),
+				  propsOptions: parsedStoredData,
 				  doRender:true,
 				  loading:false,
 				  reset:false,
-				  takeOriginal:false
+				  takeOriginal:false,
+				  dayNoteStored:dayNoteStoredTemp,
+				  dayNoteStoredTemp:dayNoteStoredTemp
 				});
-
+				console.log('dayNoteStored',this.state.dayNoteStored);
 			}else{
-				console.log('dataa ei ole (key)', key);
+				//console.log('dataa ei ole (key)', key);
 				//console.log('kun dataa['+this.state.activeKey+'] ei ole obj', this.state.originalOptions); 
 				
-				console.log('ota orginaali');
+				//console.log('ota orginaali');
 				//console.log('state.ori',this.state.originalOptions[0].items[0].items[0]); 
 				//console.log('muuttuja original',original[0].items[0].items[0]);  
 				let copyPropsOptions_ = copyOriginal(this.state.originalOptions);// [...original]
@@ -259,6 +294,8 @@ class Lister extends Component {
 					takeOriginal:true
 				});
 			}
+
+
 		} catch (error) {
 			// Error retrieving data
 			console.log('Retrieve error',error); 
@@ -279,7 +316,7 @@ class Lister extends Component {
 		console.log('copyPropsOptions', copyPropsOptions); 
 		//this.createElStored();
 		*/
-		/*
+		/* 
 		let copyPropsOptions; 
 		if(this.state.takeOriginal){
 			console.log('ota orginaali');
@@ -289,20 +326,15 @@ class Lister extends Component {
 			copyPropsOptions = [...this.state.propsOptions];
 		}
 		*/
+		let dayNoteStored;
 		let copyPropsOptions = [...this.state.propsOptions];
 
 		let ret = [];
 		//let listItems = copyPropsOptions.map((item, i) => {
 		let listItems = copyPropsOptions.map((item, i) => {
 
-		  if(item.note){
-		  	console.log('------tämä on note');
-		  	console.log('--', item.selectedValue);
-		  }else{
-		  	console.log('ei note'); 
+		  if(!item.note){
 
-		  //console.log('das',this.state.bg);  
-		  //console.log('item',item); 
 		  var key = "id|" + item.id; 
 		  ret.push(	  	
 		    <View key={key}>
@@ -472,8 +504,6 @@ class Lister extends Component {
 						activeSelection = true;        	
 		            }
 
-
-		            console.log(innerItems.selectedValue);
 		            ret2.push(  
 		              <TouchableHighlight
 			                onPress={  
@@ -519,8 +549,9 @@ class Lister extends Component {
 		    </View>
 		  ); 
 		  }
-		});
 
+		});
+		
 		//console.log(listItems);
 		return ret;
 
@@ -530,6 +561,76 @@ class Lister extends Component {
 	render() {
 		return (
 			<View style={{paddingTop:15}} key="masterView">
+				{/*
+				<View>
+					<Text>
+		        		{this.state.activeKey}
+		        	</Text>
+				</View>
+
+				<TouchableHighlight 
+					style={{...styles.button,
+		        		backgroundColor: this.state.showDebug ? this.state.activeColor : this.state.inactiveColor,
+		        	}} 
+		        	onPress={ (evt) => this.debugTexts() }>
+		        	<Text>
+		        		Debug {this.state.showDebug}
+		        	</Text>
+		        </TouchableHighlight>
+		    	*/}
+
+				{ 	
+					this.state.dayNote ?
+					//parentista (app.js) daynote nappi painettiin päälle	
+				    <View key={this.state.activeKey + "|dayNote"} style={{...styles.freeTextParent,
+				    	backgroundColor: this.state.dayNoteIsEditing ? this.state.activeColor3 : this.state.inactiveColor3
+					}}>
+							<Text style={styles.labelHeader}>
+								Päiväkirja {this.state.dateSafe}
+							</Text>
+							
+							{
+								this.state.dayNoteIsEditing ? 
+								<Text style={styles.textUnderEdit}>
+									Muokataan
+								</Text>: 
+								<Text style={{...styles.textUnderEdit,...styles.textUnderEditSaved}}>
+									Talletettu
+								</Text>
+							}
+							
+
+							<TextInput
+								autoFocus
+								multiline={true}
+								value={
+									this.state.dayNoteIsEditing ? 
+									this.state.dayNotedayNoteTemp : 
+									this.state.dayNoteStored
+								}
+								onChangeText={
+									(value) => {
+										this.setState({ 
+											dayNoteIsEditing: true,
+										
+											dayNotedayNoteTemp:value
+										})
+										
+										this.updateDayNote(value)
+									}
+								}
+								onBlur={
+									() => {
+										this.setState({ 
+											dayNoteIsEditing: false
+										})
+									}
+								}
+							></TextInput>
+						
+					  
+					</View> : null
+				}
 				<View style={styles.dateChangeParent} key="dateChanger">
 					<TouchableHighlight 
 						style={{...styles.button, ...styles.inlineSized}} 
@@ -555,55 +656,6 @@ class Lister extends Component {
 			        </TouchableHighlight> : null
 			    	}
 				</View>
-
-				{/*
-				<View>
-					<Text>
-		        		{this.state.activeKey}
-		        	</Text>
-				</View>
-
-				<TouchableHighlight 
-					style={{...styles.button,
-		        		backgroundColor: this.state.showDebug ? this.state.activeColor : this.state.inactiveColor,
-		        	}} 
-		        	onPress={ (evt) => this.debugTexts() }>
-		        	<Text>
-		        		Debug {this.state.showDebug}
-		        	</Text>
-		        </TouchableHighlight>
-		    	*/}
-
-				{ 	!this.props.dayNote ?
-					//parentista (app.js) daynote on false. Älä näytä lomaketta
-					<View style={styles.loadingBar}><Text>Ei notea</Text></View> :
-					//parentista (app.js) daynote nappi painettiin päälle	
-				    <View style={{...styles.freeTextParent,
-				    	backgroundColor: this.state.dayNoteIsEditing ? this.state.activeColor3 : this.state.inactiveColor3
-					}}>
-						<Text style={styles.labelHeader}>
-						Päivähuomio
-						</Text>
-
-
-						<TextInput
-							autoFocus
-							multiline={true}
-							value={this.state.propsOptions[0].selectedValue}
-							onChangeText={
-								(value) => {
-									this.setState({ dayNoteTxt: value });
-									this.updateDayNote(value);
-								}
-							}
-							onBlur={() => 
-								this.setState({ dayNoteIsEditing: false })
-							}
-						/>
-
-					  
-					</View>
-				}
 				{ 	
 					this.state.loading ?
 					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
@@ -735,6 +787,23 @@ const styles = StyleSheet.create({
     //borderColor:'#d6d7da',
     margin:padding,
     backgroundColor: '#FFF',
+  },
+  textUnderEdit:{
+  	fontSize:10,
+  	flex:1,
+  	backgroundColor:"#ffe69a",
+  	position:"absolute",
+  	right:0,
+  	bottom:0,
+  	marginRight:-1,
+  	marginBottom:0,
+  	padding:5,
+  	borderBottomRightRadius:borderRadius,
+    textAlign:"center",
+    width:80,
+  },
+  textUnderEditSaved:{
+  	backgroundColor:"#bae38b",
   },
 });
 

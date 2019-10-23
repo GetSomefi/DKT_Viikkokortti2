@@ -21,7 +21,7 @@ const date = new Date();
 const options = [
   {
     note:true,
-    safename:"Ajatukset",
+    safename:"Päiväkirja",
     extraName:"",
     selectedValue:""
   },
@@ -476,7 +476,7 @@ class App extends Component {
                 }
               }  
               style={{flex:1,padding:15,backgroundColor:'#607D8B',borderRadius:5,margin:15}}>
-               <Text style={{alignSelf: 'center',color:'#FFF'}}>Päivähuomio</Text>  
+               <Text style={{alignSelf: 'center',color:'#FFF'}}>Päiväkirja</Text>  
             </TouchableHighlight>
         </View>
 
