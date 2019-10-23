@@ -449,22 +449,26 @@ class App extends Component {
   render(){
     return (
       
-      <SafeAreaView>
-
-        <ScrollView>             
-          <View style={styles.body}>
-            <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
-              <Lister options={options} date={date} dayNote={this.state.dayNoteOn} />  
+      <SafeAreaView  style={styles.height}>
+                   
+        <View style={styles.body}>
+          <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
+            <View style={{padding:15}}>
+              <Text>
+                Muutosehdotuksia: {"\n"}
+                [_] Päiväkirja-nappiin täppä jos sisältöä
+              </Text>
             </View>
-            { 
-            /*
-            <View style={{alignSelf: 'stretch', height: 200, backgroundColor: 'red'}}>
-              <HeaderElem joku="jotain" /> 
-            </View> 
-            */
-            }
+            <Lister options={options} date={date} dayNote={this.state.dayNoteOn} />  
+          </View>
+          { 
+          /*
+          <View style={{alignSelf: 'stretch', height: 200, backgroundColor: 'red'}}>
+            <HeaderElem joku="jotain" /> 
           </View> 
-        </ScrollView>
+          */
+          }
+        </View> 
         
         <View style={{width:width,backgroundColor:'#ffffff40',position:'absolute',flexDirection: 'row',justifyContent: 'space-between',alignSelf:'flex-end'}}>
             <View style={{flex:1}}><Text></Text></View>
@@ -491,7 +495,10 @@ const styles = StyleSheet.create({
     flexDirection:'column',
     backgroundColor: '#FFF',
     borderColor: '#d6d7da',
-    paddingTop:80
+    paddingTop:80,
+  },
+  height:{
+    height:height,
   },
   highlightedText: {
     color: 'red',

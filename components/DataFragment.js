@@ -12,12 +12,13 @@ import {
   Dimensions,
   Image,
   TextInput,
-  UseEffect
+  UseEffect,
+  ScrollView
 } from 'react-native';
 
 var width = Dimensions.get('window').width; //full width
 var height = Dimensions.get('window').height; //full height
-let keyAppend = "t20_";
+let keyAppend = "t23_";
 
 let original;
 function copyOriginal(ori) {
@@ -27,9 +28,11 @@ function copyOriginal(ori) {
 class Lister extends Component {
 	constructor(props) {
 		super(props);
-		//console.log("date got: ", this.props.date);
-		//console.log("day note status: ", this.props.dayNote);
-		
+
+		this.focusOnAnchorPos = this.focusOnAnchorPos.bind(this);
+
+		this.header1 = React.createRef();
+
 		let preparedDate = this.props.date;
 		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
 
@@ -60,6 +63,9 @@ class Lister extends Component {
 		  inactiveColor3:"#FFF",
 
 		  activeIconOpacity:1,
+
+		  //navigation
+		  headerPositions:[],
 		};
 	}
 
@@ -67,9 +73,8 @@ class Lister extends Component {
 		this.createElStored();
 		//this.createEl();
 	}
+	/*
 	componentWillUnmount(){
-		//this.createElStored();
-		//this.createEl();
 	}
 	componentDidUpdate(prevProps){
 		// Typical usage (don't forget to compare props):
@@ -80,12 +85,11 @@ class Lister extends Component {
 			});
 		}
 	}
-	/*
 	componentDidUnmount(){
-
 	}
-
 	*/
+
+	
 
   	resetDayNote = (value) => {
   		console.log('daynote', value);  
@@ -94,6 +98,61 @@ class Lister extends Component {
   		});
   	}
 
+	scrollToC = () => {
+		let scrollYPos = height * 2;
+		console.log('should scroll to', scrollYPos); 
+		this.scroller.scrollTo({x: 0, y: scrollYPos});
+	};
+
+	focusOnAnchorPos = (pos) => {
+		let tolerance = 0;
+		pos = pos + tolerance;
+		console.log('should scroll to', pos); 
+		this.scroller.scrollTo({x: 0, y: pos});
+	};
+
+	storeHeaderPos = (element,key) => {
+		//console.log('element ', element);
+		//f = frame offset, p = page offset
+		let layout = element.nativeEvent.layout;
+	    /*console.log('height:', layout.height);
+	    console.log('width:', layout.width);
+	    console.log('x:', layout.x);
+	    console.log('y:', layout.y);
+	    */
+	    key = key.split("|")[1];
+	    let headerPositions = this.state.headerPositions;
+	    headerPositions[key] = layout.y;
+
+	    //vertical (y) only
+	    this.setState({
+	    	headerPositions:headerPositions
+	    });
+	    
+	} 
+	createNav = () => {
+		let ret = [];
+
+		let headerPos = this.state.headerPositions;
+		console.log( "positions", this.state.headerPositions );
+		let listItems = headerPos.map(function(item){
+			console.log('h pos', item); 
+			ret.push(
+				<TouchableHighlight
+				//onPress={ (evt) => this.debugTexts() }
+				//onPress={ (item) => this.focusOnAnchorPos(item)} >
+				onPress={ 
+					//this.focusOnAnchorPos(item)
+					() => {this.focusOnAnchorPos(item)}
+				} >
+				
+					<Text>{item}</Text>
+				</TouchableHighlight>
+			);
+		});
+		return ret;
+	}
+
 	//updates daynote
 	updateDayNote = (value) => {
 		console.log('value', value); 
@@ -101,8 +160,8 @@ class Lister extends Component {
 		console.log('before', copyPropsOptions); 
 		let listItems = copyPropsOptions.map((item, i) => {
 			if(item.note){
-				console.log('------tämä on note');
-				console.log('--', item.selectedValue);
+				//console.log('------tämä on note');
+				//console.log('--', item.selectedValue);
 				item.selectedValue = value;
 			}
 			return item;
@@ -204,7 +263,7 @@ class Lister extends Component {
 			  dayNoteStored:dayNoteStoredTemp,
 			  dayNoteStoredTemp:dayNoteStoredTemp
 			});
-			console.log('dayNoteStored',this.state.dayNoteStored);
+			//console.log('dayNoteStored',this.state.dayNoteStored);
 			
 		} catch (error) {
 			// Error saving data
@@ -253,13 +312,14 @@ class Lister extends Component {
 			const value = await AsyncStorage.getItem(key);
 			const parsedStoredData = JSON.parse(value);
 			if (value !== null) {
-				console.log('dataa on',parsedStoredData);
+				console.log('dataa on (key)', key, parsedStoredData);
+				//console.log('dataa on',parsedStoredData);
 
 				let dayNoteStoredTemp;
 				let copyPropsOptions = [...parsedStoredData];
 				let listItems = copyPropsOptions.map((item, i) => {
 					if(item !== null){
-						console.log('item.selectedValue ', item.selectedValue); 
+						//console.log('item.selectedValue ', item.selectedValue); 
 				  		if(item.note){
 				  			dayNoteStoredTemp = item.selectedValue
 				  		}
@@ -275,9 +335,8 @@ class Lister extends Component {
 				  dayNoteStored:dayNoteStoredTemp,
 				  dayNoteStoredTemp:dayNoteStoredTemp
 				});
-				console.log('dayNoteStored',this.state.dayNoteStored);
+				//console.log('dayNoteStored',this.state.dayNoteStored);
 			}else{
-				//console.log('dataa ei ole (key)', key);
 				//console.log('kun dataa['+this.state.activeKey+'] ei ole obj', this.state.originalOptions); 
 				
 				//console.log('ota orginaali');
@@ -286,12 +345,16 @@ class Lister extends Component {
 				let copyPropsOptions_ = copyOriginal(this.state.originalOptions);// [...original]
 				copyPropsOptions = [...copyPropsOptions_];
 
+				console.log('dataa ei ole (key)', key, copyPropsOptions);
+
 				this.setState({
 					propsOptions: copyPropsOptions,
 					doRender:true,
 					loading:false,
 					reset:true,
-					takeOriginal:true
+					takeOriginal:true,
+				  	dayNoteStored:"",
+				  	dayNoteStoredTemp:""
 				});
 			}
 
@@ -332,12 +395,21 @@ class Lister extends Component {
 		let ret = [];
 		//let listItems = copyPropsOptions.map((item, i) => {
 		let listItems = copyPropsOptions.map((item, i) => {
+			/*
+		  let doList = false;
+		  if(item !== null){
+		  	doList = true;
+		  	if(!item.note){
+		  		doList = false;
+		  	}
+		  }
+		  */
 
 		  if(!item.note){
 
 		  var key = "id|" + item.id; 
 		  ret.push(	  	
-		    <View key={key}>
+		    <View onLayout={ (view) => { this.storeHeaderPos(view,key) }} key={key}>
 				{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
 		      	<Text style={styles.header1}>{item.groupSafename}</Text>
 		    </View>
@@ -443,7 +515,7 @@ class Lister extends Component {
 					          {innerItems.questionSafename}
 					          {innerItems.extraName != "" ? "\n" : null}
 					          {innerItems.extraName}
-					          # {innerItems.selectedValue}
+					          {innerItems.selectedValue}
 					        </Text>
 					      </View>
 					    </View>
@@ -548,6 +620,8 @@ class Lister extends Component {
 		      {ret}
 		    </View>
 		  ); 
+		  }else{
+		  	return item;
 		  }
 
 		});
@@ -560,7 +634,8 @@ class Lister extends Component {
 	
 	render() {
 		return (
-			<View style={{paddingTop:15}} key="masterView">
+			<ScrollView style={styles.container} ref={(scroller) => {this.scroller = scroller}}> 
+			<View ref={this.header1} style={{paddingTop:15}} key="masterView">
 				{/*
 				<View>
 					<Text>
@@ -578,6 +653,18 @@ class Lister extends Component {
 		        	</Text>
 		        </TouchableHighlight>
 		    	*/}
+
+		    	{
+		    		<TouchableHighlight 
+						style={{...styles.button}} 
+			        	onPress={this.scrollToC}
+			        	>
+			        	<Text>
+			        		focus on h1
+			        	</Text>
+		        	</TouchableHighlight>
+		    		
+		    	}
 
 				{ 	
 					this.state.dayNote ?
@@ -656,13 +743,31 @@ class Lister extends Component {
 			        </TouchableHighlight> : null
 			    	}
 				</View>
+
+				<View style={styles.nav}>
+					<Text>Tähän alle nav</Text>
+					{
+						this.createNav()
+					}
+				</View>
 				{ 	
 					this.state.loading ?
 					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
 					//listing starts here
+
+					
 					this.createEl()
+
 				}
+				
+				<View>
+					<Text style={{...styles.footerText}}>
+						Copyright Samk Oy
+					</Text>
+				</View>
+				
 			</View>
+			</ScrollView> 
 		);
 	}
 }
@@ -674,6 +779,20 @@ let borderRadius = 5;
 
 let perfectChecbox = perfectCheckboxSize;
 const styles = StyleSheet.create({
+  nav:{
+  	position:"absolute"
+  },
+
+  footerText:{
+  	padding:padding,
+  	height:perfectCheckboxSize + 25,
+  	marginTop:padding,
+  	flex:1,
+  	textAlign:"center",
+  	backgroundColor:"#FFF",
+  	justifyContent:"center",
+  },
+
   debugTexts:{
     backgroundColor:"red"
   },
@@ -701,6 +820,11 @@ const styles = StyleSheet.create({
   labelHeader:{
     fontSize: 16,
     paddingBottom:padding,
+  },
+
+  container: {
+    flex: 1,
+    height:height
   },
 
   freeTextParent: {
