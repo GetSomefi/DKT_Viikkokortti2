@@ -16,6 +16,8 @@ import {
   ScrollView
 } from 'react-native';
 
+import AnchorNav from './AnchorNav.js';
+
 var width = Dimensions.get('window').width; //full width
 var height = Dimensions.get('window').height; //full height
 let keyAppend = "t23_";
@@ -29,7 +31,7 @@ class Lister extends Component {
 	constructor(props) {
 		super(props);
 
-		this.focusOnAnchorPos = this.focusOnAnchorPos.bind(this);
+		//this.focusOnAnchorPos = this.focusOnAnchorPos.bind(this);
 
 		this.header1 = React.createRef();
 
@@ -71,7 +73,7 @@ class Lister extends Component {
 
 	componentDidMount(){
 		this.createElStored();
-		//this.createEl();
+		//this.createNav();
 	}
 	/*
 	componentWillUnmount(){
@@ -141,9 +143,16 @@ class Lister extends Component {
 				<TouchableHighlight
 				//onPress={ (evt) => this.debugTexts() }
 				//onPress={ (item) => this.focusOnAnchorPos(item)} >
+				onLayout={this.focusOnAnchorPos.bind(this)}
 				onPress={ 
+					this.focusOnAnchorPos(item)
 					//this.focusOnAnchorPos(item)
-					() => {this.focusOnAnchorPos(item)}
+					/*
+					() => {
+						console.log('item',item); 
+						this.focusOnAnchorPos(item);
+					}
+					*/
 				} >
 				
 					<Text>{item}</Text>
@@ -625,6 +634,8 @@ class Lister extends Component {
 		  }
 
 		});
+
+		//ret.push(this.createNav());
 		
 		//console.log(listItems);
 		return ret;
@@ -744,12 +755,9 @@ class Lister extends Component {
 			    	}
 				</View>
 
-				<View style={styles.nav}>
-					<Text>Tähän alle nav</Text>
-					{
-						this.createNav()
-					}
-				</View>
+				
+				<AnchorNav positions={this.state.headerPositions} />
+				
 				{ 	
 					this.state.loading ?
 					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
