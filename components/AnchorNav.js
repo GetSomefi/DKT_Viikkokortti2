@@ -22,13 +22,6 @@ class AnchorNav extends Component {
 		}
 	}
 
-	focusOnAnchorPos = (pos) => {
-		let tolerance = 0;
-		pos = pos + tolerance;
-		console.log('should scroll to', pos); 
-		this.scroller.scrollTo({x: 0, y: pos});
-	};
-
 	componentDidMount(){
 		this.createNav();
 	}
@@ -46,25 +39,20 @@ class AnchorNav extends Component {
 		let ret = [];
 
 		let headerPos = this.state.positions;
-		console.log( "positions", this.state.positions );
-		let listItems = headerPos.map(function(item){
-			console.log('h pos', item); 
+		//console.log( "positions", this.state.positions );
+		//let listItems = headerPos.map(function(item){ // ei näin! koska tuo this.focusOnAnchorPos(item) ei näy sisällä(undefined)!
+		let listItems = headerPos.map((item,i) => { // vaan näin
+			//console.log('h pos', item); 
+			let key = "navBtn|" + i;
 			ret.push(
 				<TouchableHighlight
-				//onPress={ (evt) => this.debugTexts() }
-				//onPress={ (item) => this.focusOnAnchorPos(item)} >
-				onPress={ 
-					() => this.focusOnAnchorPos(item)
-					//this.focusOnAnchorPos(item)
-					/*
-					() => {
-						console.log('item',item); 
-						this.focusOnAnchorPos(item);
-					}
-					*/
+				key={key}
+				style={{...styles.navButton}}
+				onPress={
+					() => this.props.parentReference(item[0])
 				} >
 				
-					<Text>{item}</Text>
+					<Text style={styles.navButtonText}>{item[1]}</Text>
 				</TouchableHighlight>
 			);
 		});
@@ -72,19 +60,41 @@ class AnchorNav extends Component {
 	}
 	render() {
 		return (
-			<View style={styles.nav}>
-				<Text>Tähän alle nav</Text>
-				{
-					this.createNav()
-				}
+			<View>
+				<View style={styles.navInner}>
+					{
+						this.createNav()
+					}
+				</View>
 			</View>
 		)	
 	}
 }
 
+let perfectCheckboxSize = 50;
+let padding = 15;
+let borderRadius = 5;
+
+let perfectChecbox = perfectCheckboxSize;
 const styles = StyleSheet.create({
-  nav:{
-  	position:"absolute"
+  navInner:{
+  	flex:1,
+  	flexDirection: 'row',
+  },
+  //button
+  navButton: {
+  	flex:1,
+    height:perfectChecbox,
+    borderRadius:borderRadius,
+    margin:padding,
+    padding:padding,
+    backgroundColor: '#FFF',
+  },
+  navButtonText: {
+  	fontSize:10,
+  	textAlign:"center",
+  	justifyContent:"center",
+  	lineHeight:20,
   },
 });
 

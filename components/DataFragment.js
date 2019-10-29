@@ -13,7 +13,8 @@ import {
   Image,
   TextInput,
   UseEffect,
-  ScrollView
+  ScrollView,
+  SafeAreaView
 } from 'react-native';
 
 import AnchorNav from './AnchorNav.js';
@@ -30,10 +31,6 @@ function copyOriginal(ori) {
 class Lister extends Component {
 	constructor(props) {
 		super(props);
-
-		//this.focusOnAnchorPos = this.focusOnAnchorPos.bind(this);
-
-		this.header1 = React.createRef();
 
 		let preparedDate = this.props.date;
 		let preparedDateSafe = preparedDate.getDate() + "." + preparedDate.getMonth() +"."+ preparedDate.getFullYear();
@@ -75,11 +72,11 @@ class Lister extends Component {
 		this.createElStored();
 		//this.createNav();
 	}
-	/*
-	componentWillUnmount(){
-	}
 	componentDidUpdate(prevProps){
-		// Typical usage (don't forget to compare props):
+		/* 
+		Tämä triggaa App.js napin painalluksesta
+		DataFragment.jsn päiväkirja näkymän auki 
+		*/
 		if (this.props.dayNote !== prevProps.dayNote) {
 			//this.fetchData(this.props.userID);
 			this.setState({
@@ -87,24 +84,13 @@ class Lister extends Component {
 			});
 		}
 	}
+	/*
+	componentWillUnmount(){
+	}
+
 	componentDidUnmount(){
 	}
 	*/
-
-	
-
-  	resetDayNote = (value) => {
-  		console.log('daynote', value);  
-  		this.setState({
-  			dayNote:value
-  		});
-  	}
-
-	scrollToC = () => {
-		let scrollYPos = height * 2;
-		console.log('should scroll to', scrollYPos); 
-		this.scroller.scrollTo({x: 0, y: scrollYPos});
-	};
 
 	focusOnAnchorPos = (pos) => {
 		let tolerance = 0;
@@ -113,7 +99,7 @@ class Lister extends Component {
 		this.scroller.scrollTo({x: 0, y: pos});
 	};
 
-	storeHeaderPos = (element,key) => {
+	storeHeaderPos = (element,key,name) => {
 		//console.log('element ', element);
 		//f = frame offset, p = page offset
 		let layout = element.nativeEvent.layout;
@@ -124,7 +110,7 @@ class Lister extends Component {
 	    */
 	    key = key.split("|")[1];
 	    let headerPositions = this.state.headerPositions;
-	    headerPositions[key] = layout.y;
+	    headerPositions[key] = [layout.y,name];
 
 	    //vertical (y) only
 	    this.setState({
@@ -132,35 +118,6 @@ class Lister extends Component {
 	    });
 	    
 	} 
-	createNav = () => {
-		let ret = [];
-
-		let headerPos = this.state.headerPositions;
-		console.log( "positions", this.state.headerPositions );
-		let listItems = headerPos.map(function(item){
-			console.log('h pos', item); 
-			ret.push(
-				<TouchableHighlight
-				//onPress={ (evt) => this.debugTexts() }
-				//onPress={ (item) => this.focusOnAnchorPos(item)} >
-				onLayout={this.focusOnAnchorPos.bind(this)}
-				onPress={ 
-					this.focusOnAnchorPos(item)
-					//this.focusOnAnchorPos(item)
-					/*
-					() => {
-						console.log('item',item); 
-						this.focusOnAnchorPos(item);
-					}
-					*/
-				} >
-				
-					<Text>{item}</Text>
-				</TouchableHighlight>
-			);
-		});
-		return ret;
-	}
 
 	//updates daynote
 	updateDayNote = (value) => {
@@ -285,6 +242,11 @@ class Lister extends Component {
 		*/
 	};
 
+	updateDayNoteHasContent = (val) => {
+		console.log('parenttii pitäs mennä ', val); 
+		this.props.dayNoteUpdater(val);
+	}
+
 	//createElStored = () => {
 	createElStored = async() => {
 		//retrieve data and if it does not exist (i.e. new day) it runs empty new createEl;
@@ -344,7 +306,9 @@ class Lister extends Component {
 				  dayNoteStored:dayNoteStoredTemp,
 				  dayNoteStoredTemp:dayNoteStoredTemp
 				});
-				//console.log('dayNoteStored',this.state.dayNoteStored);
+				//send info to app.js that data exists
+				this.updateDayNoteHasContent(true);
+				
 			}else{
 				//console.log('kun dataa['+this.state.activeKey+'] ei ole obj', this.state.originalOptions); 
 				
@@ -365,13 +329,15 @@ class Lister extends Component {
 				  	dayNoteStored:"",
 				  	dayNoteStoredTemp:""
 				});
-			}
 
+				//send info to app.js that data doesn't exists
+				this.updateDayNoteHasContent(false);
+			}
 
 		} catch (error) {
 			// Error retrieving data
 			console.log('Retrieve error',error); 
-		}		
+		}	
 	};
 
 	createEl = () => {
@@ -418,7 +384,7 @@ class Lister extends Component {
 
 		  var key = "id|" + item.id; 
 		  ret.push(	  	
-		    <View onLayout={ (view) => { this.storeHeaderPos(view,key) }} key={key}>
+		    <View onLayout={ (view) => { this.storeHeaderPos(view,key,item.groupSafename) }} key={key}>
 				{ this.state.showDebug ? (<Text style={styles.debugTexts}>#{key}#</Text>) : null }
 		      	<Text style={styles.header1}>{item.groupSafename}</Text>
 		    </View>
@@ -641,141 +607,139 @@ class Lister extends Component {
 		return ret;
 
 	}
-
 	
 	render() {
 		return (
+		<View style={styles.fullHeight}>
+			<View style={styles.fullWidthNav}>
+				<AnchorNav 
+					positions={this.state.headerPositions} 
+					onRef={ref => (this.parentReference = ref)}
+					parentReference = {this.focusOnAnchorPos} 
+				/>
+			</View>
 			<ScrollView style={styles.container} ref={(scroller) => {this.scroller = scroller}}> 
-			<View ref={this.header1} style={{paddingTop:15}} key="masterView">
-				{/*
-				<View>
-					<Text>
-		        		{this.state.activeKey}
-		        	</Text>
-				</View>
 
-				<TouchableHighlight 
-					style={{...styles.button,
-		        		backgroundColor: this.state.showDebug ? this.state.activeColor : this.state.inactiveColor,
-		        	}} 
-		        	onPress={ (evt) => this.debugTexts() }>
-		        	<Text>
-		        		Debug {this.state.showDebug}
-		        	</Text>
-		        </TouchableHighlight>
-		    	*/}
-
-		    	{
-		    		<TouchableHighlight 
-						style={{...styles.button}} 
-			        	onPress={this.scrollToC}
-			        	>
-			        	<Text>
-			        		focus on h1
+				<View ref={this.header1} style={{paddingTop:15}} key="masterView">
+					{/*
+					<View>
+						<Text>
+			        		{this.state.activeKey}
 			        	</Text>
-		        	</TouchableHighlight>
-		    		
-		    	}
+					</View>
 
-				{ 	
-					this.state.dayNote ?
-					//parentista (app.js) daynote nappi painettiin päälle	
-				    <View key={this.state.activeKey + "|dayNote"} style={{...styles.freeTextParent,
-				    	backgroundColor: this.state.dayNoteIsEditing ? this.state.activeColor3 : this.state.inactiveColor3
-					}}>
-							<Text style={styles.labelHeader}>
-								Päiväkirja {this.state.dateSafe}
-							</Text>
-							
-							{
-								this.state.dayNoteIsEditing ? 
-								<Text style={styles.textUnderEdit}>
-									Muokataan
-								</Text>: 
-								<Text style={{...styles.textUnderEdit,...styles.textUnderEditSaved}}>
-									Talletettu
-								</Text>
-							}
-							
-
-							<TextInput
-								autoFocus
-								multiline={true}
-								value={
-									this.state.dayNoteIsEditing ? 
-									this.state.dayNotedayNoteTemp : 
-									this.state.dayNoteStored
-								}
-								onChangeText={
-									(value) => {
-										this.setState({ 
-											dayNoteIsEditing: true,
-										
-											dayNotedayNoteTemp:value
-										})
-										
-										this.updateDayNote(value)
-									}
-								}
-								onBlur={
-									() => {
-										this.setState({ 
-											dayNoteIsEditing: false
-										})
-									}
-								}
-							></TextInput>
-						
-					  
-					</View> : null
-				}
-				<View style={styles.dateChangeParent} key="dateChanger">
 					<TouchableHighlight 
-						style={{...styles.button, ...styles.inlineSized}} 
-			        	onPress={ () => this.changeDate("prev") }>
+						style={{...styles.button,
+			        		backgroundColor: this.state.showDebug ? this.state.activeColor : this.state.inactiveColor,
+			        	}} 
+			        	onPress={ (evt) => this.debugTexts() }>
 			        	<Text>
-			        		Edellinen
+			        		Debug {this.state.showDebug}
 			        	</Text>
 			        </TouchableHighlight>
-			        <View
-			        	style={{...styles.button, ...styles.inlineSized}} >
-			        	<Text>
-			        		{this.state.dateSafe}
-			        	</Text>
-			        </View>
+			    	*/}
 
-			        { this.state.showNextDayButton ?
-					<TouchableHighlight 
-						style={{...styles.button, ...styles.inlineSized}}  
-			        	onPress={ () => this.changeDate("next") }>
-			        	<Text>
-			        		Seuraava
-			        	</Text>
-			        </TouchableHighlight> : null
-			    	}
-				</View>
 
-				
-				<AnchorNav positions={this.state.headerPositions} />
-				
-				{ 	
-					this.state.loading ?
-					<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
-					//listing starts here
+					<View style={styles.dateChangeParent} key="dateChanger">
+						<TouchableHighlight 
+							style={{...styles.button, ...styles.inlineSized}} 
+				        	onPress={ () => this.changeDate("prev") }>
+				        	<Text>
+				        		Edellinen
+				        	</Text>
+				        </TouchableHighlight>
+				        <View
+				        	style={{...styles.button, ...styles.inlineSized}} >
+				        	<Text>
+				        		{this.state.dateSafe}
+				        	</Text>
+				        </View>
+
+				        { this.state.showNextDayButton ?
+						<TouchableHighlight 
+							style={{...styles.button, ...styles.inlineSized}}  
+				        	onPress={ 
+				        		() => this.changeDate("next") }>
+				        	<Text>
+				        		Seuraava
+				        	</Text>
+				        </TouchableHighlight> : null
+				    	}
+					</View>
+
+					{ 	
+						this.state.dayNote ?
+						//parentista (app.js) daynote nappi painettiin päälle	
+					    <View key={this.state.activeKey + "|dayNote"} style={{...styles.freeTextParent, ...styles.dayNote,
+					    	backgroundColor: this.state.dayNoteIsEditing ? this.state.activeColor3 : this.state.inactiveColor3
+						}}>
+								<Text style={styles.labelHeader}>
+									Päiväkirja {this.state.dateSafe}
+								</Text>
+								
+								{
+									this.state.dayNoteIsEditing ? 
+									<Text style={styles.textUnderEdit}>
+										Muokataan
+									</Text>: 
+									<Text style={{...styles.textUnderEdit,...styles.textUnderEditSaved}}>
+										Talletettu
+									</Text>
+								}
+								
+
+								<TextInput
+									autoFocus
+									multiline={true}
+									value={
+										this.state.dayNoteIsEditing ? 
+										this.state.dayNotedayNoteTemp : 
+										this.state.dayNoteStored
+									}
+									onChangeText={
+										(value) => {
+											this.setState({ 
+												dayNoteIsEditing: true,
+											
+												dayNotedayNoteTemp:value
+											})
+											
+											this.updateDayNote(value)
+										}
+									}
+									onBlur={
+										() => {
+											this.setState({ 
+												dayNoteIsEditing: false
+											})
+										}
+									}
+								></TextInput>
+							
+						  
+						</View> : null
+					}					
 
 					
-					this.createEl()
+					{ 	
+						this.state.loading ?
+						<View style={styles.loadingBar}><Text>Ladataan...</Text></View> :
+						//listing starts here
 
-				}
-				
-				<View>
-					<Text style={{...styles.footerText}}>
-						Copyright Samk Oy
-					</Text>
+						
+						this.createEl()
+
+					}
+					
+					<View>
+						<Text style={{...styles.footerText}}>
+							Copyright Samk Oy
+						</Text>
+					</View>
+					
 				</View>
-				
-			</View>
 			</ScrollView> 
+		</View>
 		);
 	}
 }
@@ -787,8 +751,15 @@ let borderRadius = 5;
 
 let perfectChecbox = perfectCheckboxSize;
 const styles = StyleSheet.create({
-  nav:{
-  	position:"absolute"
+  fullHeight:{
+    height:height-100,//tää on random luku joka estää alaosan katkon
+  },
+  fullWidthNav:{
+    width:width,
+    backgroundColor:"#5388ca",
+    height:80,
+    marginTop:-1,
+    /*marginLeft:width/2*/
   },
 
   footerText:{
@@ -936,6 +907,8 @@ const styles = StyleSheet.create({
   },
   textUnderEditSaved:{
   	backgroundColor:"#bae38b",
+  },
+  dayNote:{
   },
 });
 

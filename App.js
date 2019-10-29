@@ -439,6 +439,7 @@ class App extends Component {
       dayNoteOn:false
     };
   }
+
   toggleDayNote = () => {
     let toggler = !this.state.dayNoteOn; 
     this.setState({ 
@@ -446,20 +447,41 @@ class App extends Component {
     });
     console.log('day note', this.state.dayNoteOn);   
   }
+
+  updateDayNoteHasContent = (newState) => {
+    console.log('day not content updated', newState); 
+    this.setState({
+      dayNoteHasContent:newState
+    });
+  }
+
   render(){
     return (
       
       <SafeAreaView  style={styles.height}>
                    
         <View style={styles.body}>
-          <View style={{width:width, flex:1, backgroundColor: '#5fd2c4'}}>
+          <View style={styles.bodyInner}>
+            {/*
             <View style={{padding:15}}>
               <Text>
                 Muutosehdotuksia: {"\n"}
                 [_] Päiväkirja-nappiin täppä jos sisältöä
               </Text>
+              <Text>
+                {
+                  this.state.dayNoteOn ? "päällä" : "pois"
+                }
+              </Text>
             </View>
-            <Lister options={options} date={date} dayNote={this.state.dayNoteOn} />  
+            */}
+            <Lister 
+              options={options} 
+              date={date} 
+              dayNote={this.state.dayNoteOn}
+              onRef={ref => (this.dayNoteUpdater = ref)}
+              dayNoteUpdater = {this.updateDayNoteHasContent} 
+            />  
           </View>
           { 
           /*
@@ -470,7 +492,7 @@ class App extends Component {
           }
         </View> 
         
-        <View style={{width:width,backgroundColor:'#ffffff40',position:'absolute',flexDirection: 'row',justifyContent: 'space-between',alignSelf:'flex-end'}}>
+        <View style={styles.headerBar}>
             <View style={{flex:1}}><Text></Text></View>
             <View style={{flex:1}}><Text></Text></View>
             <TouchableHighlight 
@@ -479,8 +501,16 @@ class App extends Component {
                   this.toggleDayNote(); 
                 }
               }  
-              style={{flex:1,padding:15,backgroundColor:'#607D8B',borderRadius:5,margin:15}}>
-               <Text style={{alignSelf: 'center',color:'#FFF'}}>Päiväkirja</Text>  
+              style={styles.headerBarButton}>             
+              <View style={{justifyContent:"center"}}>
+                {
+                  this.state.dayNoteHasContent ? 
+                  <View style={styles.activeCircle}></View> : null
+                }
+                <Text style={styles.headerBarButtonText}>
+                  Päiväkirja
+                 </Text> 
+              </View> 
             </TouchableHighlight>
         </View>
 
@@ -489,13 +519,38 @@ class App extends Component {
   }
 };
 
+let paddingTop = 80;
 const styles = StyleSheet.create({
   body: {
     flex:1,
     flexDirection:'column',
     backgroundColor: '#FFF',
     borderColor: '#d6d7da',
-    paddingTop:80,
+    paddingTop:paddingTop,
+  },
+  bodyInner:{
+    width:width, 
+    flex:1, 
+    backgroundColor: '#F5F5F6'   
+  },
+  headerBar:{
+    width:width,
+    backgroundColor:'#135b99',
+    position:'absolute',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignSelf:'flex-end'
+  },
+  headerBarButton:{
+    flex:1,
+    padding:15,
+    backgroundColor:'#5388ca',
+    borderRadius:5,
+    margin:15,
+  },
+  headerBarButtonText:{
+    alignSelf: 'center',
+    color:'#FFF'
   },
   height:{
     height:height,
@@ -503,6 +558,32 @@ const styles = StyleSheet.create({
   highlightedText: {
     color: 'red',
   },
+  activeCircle:{
+    alignSelf: 'flex-start',
+    borderRadius:10,
+    width:10,
+    height:10,
+    backgroundColor:"#cefff6",
+    position:"absolute",
+    marginLeft:8,
+  }
 });
+/*
+https://material.io/resources/color/#!/?view.left=0&view.right=1&primary.color=135b99&secondary.color=6734ff
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<resources>
+  Blue
+  <color name="primaryColor">#135b99</color>
+  <color name="primaryLightColor">#5388ca</color>
+  <color name="primaryDarkColor">#00326a</color>
+  PurplishBlue
+  <color name="secondaryColor">#6734ff</color>
+  <color name="secondaryLightColor">#a265ff</color>
+  <color name="secondaryDarkColor">#1200ca</color>
+
+  <color name="primaryTextColor">#ffffff</color>
+  <color name="secondaryTextColor">#ffffff</color>
+</resources>
+*/
 
 export default App;
